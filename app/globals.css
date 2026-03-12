@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 36 33% 97%;
+  --foreground: 210 24% 16%;
+  --card: 0 0% 100%;
+  --card-foreground: 210 24% 16%;
+  --primary: 164 58% 27%;
+  --primary-foreground: 38 60% 96%;
+  --secondary: 40 45% 92%;
+  --secondary-foreground: 208 20% 18%;
+  --muted: 36 30% 93%;
+  --muted-foreground: 215 14% 41%;
+  --accent: 18 88% 59%;
+  --accent-foreground: 38 60% 96%;
+  --border: 30 20% 86%;
+  --input: 30 20% 86%;
+  --ring: 164 58% 27%;
+  --radius: 1rem;
+  --font-sans: "Instrument Sans", sans-serif;
+  --font-display: "Manrope", sans-serif;
+}
+
+* {
+  @apply border-border;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-background text-foreground antialiased;
+  background-image:
+    radial-gradient(circle at top left, rgba(16, 185, 129, 0.15), transparent 28%),
+    radial-gradient(circle at right, rgba(249, 115, 22, 0.12), transparent 30%);
+}
+
+a {
+  @apply transition-colors;
+}
+
+.surface-grid {
+  background-image:
+    radial-gradient(circle at top left, rgba(16, 185, 129, 0.08), transparent 24%),
+    linear-gradient(to right, rgba(148, 163, 184, 0.12) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(148, 163, 184, 0.12) 1px, transparent 1px);
+  background-size: cover, 48px 48px, 48px 48px;
+}
