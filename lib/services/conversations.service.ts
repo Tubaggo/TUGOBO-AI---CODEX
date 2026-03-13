@@ -1,4 +1,9 @@
-import type { ConversationThread, ReservationExtraction } from "../domain";
+import type {
+  ConversationIntent,
+  ConversationStatus,
+  ConversationThread,
+  ReservationExtraction,
+} from "../domain";
 import type {
   ConversationLeadSyncResult,
   ConversationRepository,
@@ -6,6 +11,7 @@ import type {
   CreateInternalNoteInput,
   CreateMessageInput,
   LeadRepository,
+  MessageRepository,
   ServiceContext,
   UpdateConversationInput,
 } from "./contracts";
@@ -15,7 +21,15 @@ import { assertNonEmpty, getNow, normalizeTags } from "./service-helpers";
 export class ConversationsService {
   constructor(
     private readonly conversations: ConversationRepository,
+    private readonly messages: MessageRepository,
     private readonly leads: LeadRepository,
+    private readonly extractLeadData: (content: string) => Partial<ReservationExtraction>,
+    private readonly resolveNextState: (input: {
+      messageSenderType: CreateMessageInput["senderType"];
+      previousStatus: ConversationStatus;
+      previousIntent: ConversationIntent | null;
+      extracted: Partial<ReservationExtraction>;
+    }) => Pick<UpdateConversationInput, "status" | "intent" | "humanHandoff" | "aiEnabled">,
   ) {}
 
   async list(context: ServiceContext, filter?: Parameters<ConversationRepository["list"]>[1]) {
@@ -55,11 +69,28 @@ export class ConversationsService {
   async appendMessage(context: ServiceContext, input: CreateMessageInput) {
     assertNonEmpty(input.content, "content");
 
-    return this.conversations.addMessage(context.tenantId, {
+    const message = await this.messages.create(context.tenantId, {
       ...input,
       messageType: input.messageType ?? "text",
       now: getNow(context.now),
     });
+
+    const conversation = await this.getThread(context, input.conversationId);
+    const extracted = this.extractLeadData(message.content);
+    const nextState = this.resolveNextState({
+      messageSenderType: input.senderType,
+      previousStatus: conversation.conversation.status,
+      previousIntent: conversation.conversation.intent,
+      extracted,
+    });
+
+    await this.update(context, input.conversationId, nextState);
+
+    if (input.senderType === "guest") {
+      await this.syncLeadFromExtraction(context, input.conversationId, extracted);
+    }
+
+    return message;
   }
 
   async addInternalNote(context: ServiceContext, input: CreateInternalNoteInput) {

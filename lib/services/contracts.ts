@@ -154,12 +154,16 @@ export interface ConversationRepository {
     conversationId: string,
     input: UpdateConversationInput & { now: Date },
   ): Promise<Conversation>;
-  addMessage(tenantId: string, input: CreateMessageInput & { now: Date }): Promise<Message>;
   addInternalNote(
     tenantId: string,
     input: CreateInternalNoteInput & { authorUserId: string; now: Date },
   ): Promise<InternalNote>;
   getThread(tenantId: string, conversationId: string): Promise<ConversationThread | null>;
+}
+
+export interface MessageRepository {
+  create(tenantId: string, input: CreateMessageInput & { now: Date }): Promise<Message>;
+  listByConversation(tenantId: string, conversationId: string): Promise<Message[]>;
 }
 
 export interface LeadRepository {
