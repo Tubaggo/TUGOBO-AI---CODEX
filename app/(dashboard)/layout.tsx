@@ -13,6 +13,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Tugobo AI</p>
           <h1 className="mt-3 text-xl font-semibold">CRM Workspace</h1>
           <nav className="mt-8 space-y-2 text-sm">
+            <Link className="block rounded-xl px-3 py-2 text-slate-200 hover:bg-slate-900" href="/dashboard">
+              Overview
+            </Link>
             <Link className="block rounded-xl px-3 py-2 text-slate-200 hover:bg-slate-900" href="/conversations">
               Conversations
             </Link>
