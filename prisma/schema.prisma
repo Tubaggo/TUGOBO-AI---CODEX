@@ -1,0 +1,597 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum BusinessType {
+  HOTEL
+  BOUTIQUE_HOTEL
+  APART_HOTEL
+  PENSION
+  BUNGALOW
+  GLAMPING
+  VILLA
+  SMALL_RESORT
+  OTHER
+}
+
+enum PlatformRoleType {
+  SUPER_ADMIN
+  OWNER
+  MANAGER
+  RESERVATION_STAFF
+}
+
+enum MembershipRole {
+  OWNER
+  MANAGER
+  RESERVATION_STAFF
+}
+
+enum PlanCode {
+  STARTER
+  GROWTH
+  PRO
+}
+
+enum BillingCycle {
+  MONTHLY
+  YEARLY
+}
+
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  EXPIRED
+}
+
+enum UsageMetricType {
+  CONVERSATIONS_COUNT
+  AI_MESSAGES_COUNT
+  LEADS_COUNT
+  RESERVATIONS_COUNT
+  TEAM_MEMBERS_COUNT
+  CHANNELS_COUNT
+}
+
+enum PropertyType {
+  HOTEL
+  BOUTIQUE_HOTEL
+  APART_HOTEL
+  PENSION
+  BUNGALOW
+  GLAMPING
+  VILLA
+  OTHER
+}
+
+enum ChannelType {
+  WHATSAPP
+  INSTAGRAM
+  WEBCHAT
+}
+
+enum ChannelStatus {
+  CONNECTED
+  DISCONNECTED
+  PENDING
+  ERROR
+}
+
+enum ConversationStatus {
+  OPEN
+  WAITING
+  RESOLVED
+  ARCHIVED
+  HUMAN_HANDLING
+}
+
+enum ConversationIntent {
+  RESERVATION_REQUEST
+  AVAILABILITY_CHECK
+  PRICE_REQUEST
+  PROPERTY_INFO
+  CANCELLATION_CHANGE
+  CANCELLATION_REQUEST
+  HUMAN_HANDOFF
+  OTHER
+}
+
+enum MessageSenderType {
+  GUEST
+  ASSISTANT
+  HUMAN
+  SYSTEM
+}
+
+enum MessageType {
+  TEXT
+  NOTE
+  SYSTEM
+  ATTACHMENT_PLACEHOLDER
+}
+
+enum LeadStatus {
+  NEW
+  QUALIFIED
+  OFFER_SENT
+  WON
+  LOST
+}
+
+enum LeadPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum LeadTemperature {
+  HOT
+  WARM
+  COLD
+}
+
+enum ReservationStatus {
+  DRAFT
+  PENDING
+  CONFIRMED
+  CANCELED
+  COMPLETED
+}
+
+enum KnowledgeBaseCategory {
+  FAQ
+  POLICY
+  ROOM_INFO
+  AMENITIES
+  LOCATION
+  CHECKIN_CHECKOUT
+  PRICING_INFO
+  GENERAL
+}
+
+enum ResponseStyle {
+  CONCISE
+  BALANCED
+  DETAILED
+}
+
+enum AutomationFlowType {
+  RESERVATION_INTAKE
+  MISSING_INFORMATION
+  PRICING
+  HUMAN_HANDOFF
+  FOLLOW_UP
+}
+
+model Tenant {
+  id              String               @id @default(cuid())
+  name            String
+  slug            String               @unique
+  businessType    BusinessType         @map("business_type")
+  phone           String?
+  email           String?
+  website         String?
+  country         String?
+  city            String?
+  address         String?
+  timezone        String?
+  currency        String               @default("EUR")
+  isActive        Boolean              @default(true) @map("is_active")
+  createdAt       DateTime             @default(now()) @map("created_at")
+  updatedAt       DateTime             @updatedAt @map("updated_at")
+  memberships     Membership[]
+  properties      Property[]
+  channels        Channel[]
+  conversations   Conversation[]
+  leads           Lead[]
+  reservations    Reservation[]
+  subscription    Subscription?
+  assistantConfig AssistantConfig?
+  knowledgeBase   KnowledgeBaseEntry[]
+  automationFlows AutomationFlow[]
+  auditLogs       AuditLog[]
+  usageMetrics    UsageMetric[]
+  internalNotes   InternalNote[]
+
+  @@index([isActive])
+  @@map("tenants")
+}
+
+model User {
+  id             String           @id @default(cuid())
+  fullName       String           @map("full_name")
+  email          String           @unique
+  phone          String?
+  passwordHash   String?          @map("password_hash")
+  avatarUrl      String?          @map("avatar_url")
+  roleType       PlatformRoleType @map("role_type")
+  isActive       Boolean          @default(true) @map("is_active")
+  lastLoginAt    DateTime?        @map("last_login_at")
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @updatedAt @map("updated_at")
+  memberships    Membership[]
+  assignedConvos Conversation[]   @relation("AssignedConversationUser")
+  assignedLeads  Lead[]           @relation("AssignedLeadUser")
+  sentMessages   Message[]        @relation("SenderUser")
+  internalNotes  InternalNote[]   @relation("InternalNoteAuthor")
+  auditLogs      AuditLog[]
+
+  @@index([roleType])
+  @@index([isActive])
+  @@map("users")
+}
+
+model Membership {
+  id        String         @id @default(cuid())
+  tenantId  String         @map("tenant_id")
+  userId    String         @map("user_id")
+  role      MembershipRole
+  createdAt DateTime       @default(now()) @map("created_at")
+  tenant    Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, userId])
+  @@index([tenantId, role])
+  @@index([userId])
+  @@map("memberships")
+}
+
+model Subscription {
+  id                   String             @id @default(cuid())
+  tenantId             String             @unique @map("tenant_id")
+  planName             String             @map("plan_name")
+  planCode             PlanCode           @map("plan_code")
+  billingCycle         BillingCycle       @map("billing_cycle")
+  status               SubscriptionStatus
+  startedAt            DateTime           @map("started_at")
+  endsAt               DateTime?          @map("ends_at")
+  stripeCustomerId     String?            @map("stripe_customer_id")
+  stripeSubscriptionId String?            @map("stripe_subscription_id")
+  createdAt            DateTime           @default(now()) @map("created_at")
+  updatedAt            DateTime           @updatedAt @map("updated_at")
+  tenant               Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@map("subscriptions")
+}
+
+model UsageMetric {
+  id          String          @id @default(cuid())
+  tenantId    String          @map("tenant_id")
+  metricType  UsageMetricType @map("metric_type")
+  value       Int
+  periodStart DateTime        @map("period_start")
+  periodEnd   DateTime        @map("period_end")
+  createdAt   DateTime        @default(now()) @map("created_at")
+  tenant      Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, metricType, periodStart])
+  @@map("usage_metrics")
+}
+
+model Property {
+  id            String               @id @default(cuid())
+  tenantId      String               @map("tenant_id")
+  name          String
+  propertyType  PropertyType         @map("property_type")
+  description   String?
+  city          String?
+  country       String?
+  address       String?
+  latitude      Decimal?             @db.Decimal(10, 7)
+  longitude     Decimal?             @db.Decimal(10, 7)
+  phone         String?
+  email         String?
+  checkInTime   String?              @map("check_in_time")
+  checkOutTime  String?              @map("check_out_time")
+  amenitiesJson Json?                @map("amenities_json")
+  isActive      Boolean              @default(true) @map("is_active")
+  createdAt     DateTime             @default(now()) @map("created_at")
+  updatedAt     DateTime             @updatedAt @map("updated_at")
+  tenant        Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  roomTypes     RoomType[]
+  pricingRules  PricingRule[]
+  reservations  Reservation[]
+  knowledgeBase KnowledgeBaseEntry[]
+
+  @@index([tenantId])
+  @@index([tenantId, isActive])
+  @@map("properties")
+}
+
+model RoomType {
+  id               String        @id @default(cuid())
+  propertyId       String        @map("property_id")
+  name             String
+  code             String
+  description      String?
+  capacityAdults   Int           @default(2) @map("capacity_adults")
+  capacityChildren Int           @default(0) @map("capacity_children")
+  basePrice        Decimal       @db.Decimal(10, 2) @map("base_price")
+  currency         String
+  amenitiesJson    Json?         @map("amenities_json")
+  isActive         Boolean       @default(true) @map("is_active")
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @updatedAt @map("updated_at")
+  property         Property      @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  pricingRules     PricingRule[]
+  reservations     Reservation[]
+
+  @@unique([propertyId, code])
+  @@index([propertyId])
+  @@index([propertyId, isActive])
+  @@map("room_types")
+}
+
+model PricingRule {
+  id            String    @id @default(cuid())
+  propertyId    String    @map("property_id")
+  roomTypeId    String?   @map("room_type_id")
+  name          String
+  seasonName    String?   @map("season_name")
+  startDate     DateTime  @map("start_date")
+  endDate       DateTime  @map("end_date")
+  minNights     Int?      @map("min_nights")
+  pricePerNight Decimal   @db.Decimal(10, 2) @map("price_per_night")
+  currency      String
+  isActive      Boolean   @default(true) @map("is_active")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  property      Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  roomType      RoomType? @relation(fields: [roomTypeId], references: [id], onDelete: SetNull)
+
+  @@index([propertyId])
+  @@index([roomTypeId])
+  @@index([startDate, endDate])
+  @@map("pricing_rules")
+}
+
+model Channel {
+  id                String        @id @default(cuid())
+  tenantId          String        @map("tenant_id")
+  type              ChannelType
+  displayName       String        @map("display_name")
+  status            ChannelStatus
+  externalAccountId String?       @map("external_account_id")
+  webhookUrl        String?       @map("webhook_url")
+  metadataJson      Json?         @map("metadata_json")
+  connectedAt       DateTime?     @map("connected_at")
+  createdAt         DateTime      @default(now()) @map("created_at")
+  updatedAt         DateTime      @updatedAt @map("updated_at")
+  tenant            Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  conversations     Conversation[]
+
+  @@unique([tenantId, type, displayName])
+  @@index([tenantId])
+  @@index([tenantId, type])
+  @@index([status])
+  @@map("channels")
+}
+
+model Conversation {
+  id             String              @id @default(cuid())
+  tenantId       String              @map("tenant_id")
+  channelId      String              @map("channel_id")
+  assignedUserId String?             @map("assigned_user_id")
+  guestName      String?             @map("guest_name")
+  guestPhone     String?             @map("guest_phone")
+  guestEmail     String?             @map("guest_email")
+  guestLanguage  String?             @map("guest_language")
+  status         ConversationStatus  @default(OPEN)
+  source         ChannelType
+  intent         ConversationIntent?
+  aiEnabled      Boolean             @default(true) @map("ai_enabled")
+  humanHandoff   Boolean             @default(false) @map("human_handoff")
+  tagsJson       Json?               @map("tags_json")
+  firstMessageAt DateTime?           @map("first_message_at")
+  lastMessageAt  DateTime?           @map("last_message_at")
+  createdAt      DateTime            @default(now()) @map("created_at")
+  updatedAt      DateTime            @updatedAt @map("updated_at")
+  tenant         Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  channel        Channel             @relation(fields: [channelId], references: [id], onDelete: Restrict)
+  lead           Lead?               @relation("ConversationLead")
+  assignedUser   User?               @relation("AssignedConversationUser", fields: [assignedUserId], references: [id], onDelete: SetNull)
+  messages       Message[]
+  internalNotes  InternalNote[]
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, channelId])
+  @@index([assignedUserId])
+  @@index([lastMessageAt])
+  @@index([createdAt])
+  @@map("conversations")
+}
+
+model Message {
+  id             String            @id @default(cuid())
+  conversationId String            @map("conversation_id")
+  senderType     MessageSenderType @map("sender_type")
+  senderUserId   String?           @map("sender_user_id")
+  messageType    MessageType       @map("message_type")
+  content        String
+  rawPayloadJson Json?             @map("raw_payload_json")
+  createdAt      DateTime          @default(now()) @map("created_at")
+  conversation   Conversation      @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderUser     User?             @relation("SenderUser", fields: [senderUserId], references: [id], onDelete: SetNull)
+
+  @@index([conversationId, createdAt])
+  @@index([senderType])
+  @@map("messages")
+}
+
+model InternalNote {
+  id             String        @id @default(cuid())
+  tenantId       String        @map("tenant_id")
+  conversationId String?       @map("conversation_id")
+  leadId         String?       @map("lead_id")
+  authorUserId   String        @map("author_user_id")
+  content        String
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+  tenant         Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  conversation   Conversation? @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  lead           Lead?         @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  authorUser     User          @relation("InternalNoteAuthor", fields: [authorUserId], references: [id], onDelete: Restrict)
+
+  @@index([tenantId])
+  @@index([conversationId])
+  @@index([leadId])
+  @@index([authorUserId])
+  @@map("internal_notes")
+}
+
+model Lead {
+  id                 String          @id @default(cuid())
+  tenantId           String          @map("tenant_id")
+  conversationId     String?         @unique @map("conversation_id")
+  assignedUserId     String?         @map("assigned_user_id")
+  fullName           String?         @map("full_name")
+  email              String?
+  phone              String?
+  language           String?
+  checkIn            DateTime?       @map("check_in")
+  checkOut           DateTime?       @map("check_out")
+  guestCount         Int?            @map("guest_count")
+  childCount         Int?            @map("child_count")
+  roomTypePreference String?         @map("room_type_preference")
+  budget             Decimal?        @db.Decimal(10, 2)
+  estimatedValue     Decimal?        @db.Decimal(10, 2) @map("estimated_value")
+  currency           String?         @default("EUR")
+  sourceChannel      ChannelType?    @map("source_channel")
+  status             LeadStatus      @default(NEW)
+  priority           LeadPriority    @default(MEDIUM)
+  temperature        LeadTemperature?
+  tagsJson           Json?           @map("tags_json")
+  lastActivityAt     DateTime?       @map("last_activity_at")
+  createdAt          DateTime        @default(now()) @map("created_at")
+  updatedAt          DateTime        @updatedAt @map("updated_at")
+  tenant             Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  conversation       Conversation?   @relation("ConversationLead", fields: [conversationId], references: [id], onDelete: SetNull)
+  assignedUser       User?           @relation("AssignedLeadUser", fields: [assignedUserId], references: [id], onDelete: SetNull)
+  internalNotes      InternalNote[]
+  reservation        Reservation?
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([assignedUserId])
+  @@index([lastActivityAt])
+  @@index([sourceChannel])
+  @@map("leads")
+}
+
+model Reservation {
+  id              String            @id @default(cuid())
+  tenantId        String            @map("tenant_id")
+  leadId          String?           @unique @map("lead_id")
+  propertyId      String            @map("property_id")
+  roomTypeId      String?           @map("room_type_id")
+  reservationCode String            @unique @map("reservation_code")
+  guestName       String            @map("guest_name")
+  guestEmail      String?           @map("guest_email")
+  guestPhone      String?           @map("guest_phone")
+  checkIn         DateTime          @map("check_in")
+  checkOut        DateTime          @map("check_out")
+  adultCount      Int               @map("adult_count")
+  childCount      Int               @default(0) @map("child_count")
+  totalPrice      Decimal           @db.Decimal(10, 2) @map("total_price")
+  currency        String
+  status          ReservationStatus @default(DRAFT)
+  notes           String?
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+  tenant          Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  lead            Lead?             @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  property        Property          @relation(fields: [propertyId], references: [id], onDelete: Restrict)
+  roomType        RoomType?         @relation(fields: [roomTypeId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([propertyId])
+  @@index([roomTypeId])
+  @@index([checkIn, checkOut])
+  @@map("reservations")
+}
+
+model KnowledgeBaseEntry {
+  id         String                @id @default(cuid())
+  tenantId   String                @map("tenant_id")
+  propertyId String?               @map("property_id")
+  category   KnowledgeBaseCategory
+  title      String
+  content    String
+  language   String                @default("en")
+  sortOrder  Int                   @default(0) @map("sort_order")
+  isActive   Boolean               @default(true) @map("is_active")
+  createdAt  DateTime              @default(now()) @map("created_at")
+  updatedAt  DateTime              @updatedAt @map("updated_at")
+  tenant     Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  property   Property?             @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([propertyId])
+  @@index([category, language])
+  @@map("knowledge_base_entries")
+}
+
+model AssistantConfig {
+  id                     String        @id @default(cuid())
+  tenantId               String        @unique @map("tenant_id")
+  tone                   String
+  welcomeMessage         String?       @map("welcome_message")
+  fallbackMessage        String?       @map("fallback_message")
+  supportedLanguagesJson Json?         @map("supported_languages_json")
+  handoffRulesJson       Json?         @map("handoff_rules_json")
+  businessHoursJson      Json?         @map("business_hours_json")
+  responseStyle          ResponseStyle @default(BALANCED) @map("response_style")
+  collectPhone           Boolean       @default(true) @map("collect_phone")
+  collectEmail           Boolean       @default(true) @map("collect_email")
+  collectDates           Boolean       @default(true) @map("collect_dates")
+  createdAt              DateTime      @default(now()) @map("created_at")
+  updatedAt              DateTime      @updatedAt @map("updated_at")
+  tenant                 Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("assistant_configs")
+}
+
+model AutomationFlow {
+  id          String             @id @default(cuid())
+  tenantId    String             @map("tenant_id")
+  name        String
+  flowType    AutomationFlowType @map("flow_type")
+  description String?
+  configJson  Json?              @map("config_json")
+  isActive    Boolean            @default(true) @map("is_active")
+  createdAt   DateTime           @default(now()) @map("created_at")
+  updatedAt   DateTime           @updatedAt @map("updated_at")
+  tenant      Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([tenantId, flowType])
+  @@map("automation_flows")
+}
+
+model AuditLog {
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  userId       String?  @map("user_id")
+  entityType   String   @map("entity_type")
+  entityId     String   @map("entity_id")
+  action       String
+  metadataJson Json?    @map("metadata_json")
+  createdAt    DateTime @default(now()) @map("created_at")
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user         User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, entityType, entityId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
