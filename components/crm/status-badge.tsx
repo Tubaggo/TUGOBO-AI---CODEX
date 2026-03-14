@@ -1,6 +1,6 @@
-import type { ConversationStatus, LeadStatus } from "../../lib/domain";
+import type { ConversationStatus, LeadStatus, ReservationStatus } from "../../lib/domain";
 
-const styles: Record<ConversationStatus | LeadStatus, string> = {
+const styles: Record<ConversationStatus | LeadStatus | ReservationStatus, string> = {
   open: "bg-blue-50 text-blue-700 ring-blue-200",
   waiting: "bg-amber-50 text-amber-700 ring-amber-200",
   resolved: "bg-emerald-50 text-emerald-700 ring-emerald-200",
@@ -11,12 +11,17 @@ const styles: Record<ConversationStatus | LeadStatus, string> = {
   offer_sent: "bg-amber-50 text-amber-700 ring-amber-200",
   won: "bg-emerald-50 text-emerald-700 ring-emerald-200",
   lost: "bg-rose-50 text-rose-700 ring-rose-200",
+  draft: "bg-slate-100 text-slate-700 ring-slate-200",
+  pending: "bg-amber-50 text-amber-700 ring-amber-200",
+  confirmed: "bg-emerald-50 text-emerald-700 ring-emerald-200",
+  canceled: "bg-rose-50 text-rose-700 ring-rose-200",
+  completed: "bg-emerald-50 text-emerald-700 ring-emerald-200",
 };
 
-export function StatusBadge({ status }: { status: ConversationStatus | LeadStatus }) {
+export function StatusBadge({ status }: { status: ConversationStatus | LeadStatus | ReservationStatus }) {
   return (
     <span className={`inline-flex rounded-full px-2 py-1 text-xs font-medium capitalize ring-1 ${styles[status]}`}>
-      {status.replace("_", " ")}
+      {status === "canceled" ? "cancelled" : status.replace("_", " ")}
     </span>
   );
 }
