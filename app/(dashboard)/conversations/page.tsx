@@ -2,6 +2,7 @@ import { ChatThread } from "../../../components/crm/chat-thread";
 import { ConversationList } from "../../../components/crm/conversation-list";
 import { LeadInformationPanel } from "../../../components/crm/lead-information-panel";
 import { getMockConversationEngine } from "../../../lib/mocks/conversation-engine";
+import { assistantConfig, knowledgeBaseEntries } from "../../../lib/mocks/settings-module";
 
 type ConversationsPageProps = {
   searchParams?: Promise<{
@@ -16,6 +17,13 @@ export default async function ConversationsPage({ searchParams }: ConversationsP
   const conversations = await engine.service.list(context);
   const selectedConversationId = params.conversation ?? engine.defaultConversationId;
   const thread = await engine.service.getThread(context, selectedConversationId);
+  const aiResult = engine.brain.process({
+    thread,
+    assistantConfig,
+    knowledgeBase: knowledgeBaseEntries,
+    currentLead: thread.lead,
+    now: new Date("2026-03-16T12:00:00.000Z"),
+  });
 
   return (
     <div className="space-y-4">
@@ -32,10 +40,10 @@ export default async function ConversationsPage({ searchParams }: ConversationsP
           <ConversationList items={conversations} selectedConversationId={selectedConversationId} />
         </div>
         <div className="min-h-[720px]">
-          <ChatThread thread={thread} />
+          <ChatThread thread={thread} aiResult={aiResult} assistantConfig={assistantConfig} />
         </div>
         <div className="min-h-[720px]">
-          <LeadInformationPanel thread={thread} />
+          <LeadInformationPanel thread={thread} aiResult={aiResult} />
         </div>
       </div>
     </div>

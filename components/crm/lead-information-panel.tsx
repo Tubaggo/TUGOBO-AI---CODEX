@@ -1,8 +1,10 @@
 import type { ConversationThread } from "../../lib/domain";
+import type { AiReservationProcessingResult } from "../../lib/ai";
 import { StatusBadge } from "./status-badge";
 
 type LeadInformationPanelProps = {
   thread: ConversationThread;
+  aiResult: AiReservationProcessingResult;
 };
 
 function Field({ label, value }: { label: string; value: string | number | null | undefined }) {
@@ -14,7 +16,7 @@ function Field({ label, value }: { label: string; value: string | number | null 
   );
 }
 
-export function LeadInformationPanel({ thread }: LeadInformationPanelProps) {
+export function LeadInformationPanel({ thread, aiResult }: LeadInformationPanelProps) {
   const lead = thread.lead;
 
   return (
@@ -78,6 +80,116 @@ export function LeadInformationPanel({ thread }: LeadInformationPanelProps) {
             <p className="text-sm text-slate-500">No internal notes yet.</p>
           )}
         </div>
+
+        <div className="space-y-3 border-t border-slate-100 pt-5">
+          <p className="text-xs uppercase tracking-[0.16em] text-slate-400">AI Reservation Brain</p>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Field label="Detected Intent" value={aiResult.intent.replace("_", " ")} />
+            <Field label="Lead Score" value={`${aiResult.leadScore.score} / 100`} />
+            <Field label="Qualification" value={aiResult.qualification.replace("_", " ")} />
+            <Field label="Next Action" value={aiResult.nextAction.replace("_", " ")} />
+          </div>
+        </div>
+
+        <div className="space-y-3 border-t border-slate-100 pt-5">
+          <p className="text-xs uppercase tracking-[0.16em] text-slate-400">Extracted Fields</p>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Field label="Guest Name" value={aiResult.entities.guestName} />
+            <Field label="Phone" value={aiResult.entities.phone} />
+            <Field label="Email" value={aiResult.entities.email} />
+            <Field label="Language" value={aiResult.entities.language} />
+            <Field
+              label="Check-in"
+              value={
+                aiResult.entities.checkIn ? new Date(aiResult.entities.checkIn).toLocaleDateString("en-GB") : null
+              }
+            />
+            <Field
+              label="Check-out"
+              value={
+                aiResult.entities.checkOut ? new Date(aiResult.entities.checkOut).toLocaleDateString("en-GB") : null
+              }
+            />
+            <Field label="Guests" value={aiResult.entities.guestCount} />
+            <Field label="Children" value={aiResult.entities.childCount} />
+            <Field label="Room Preference" value={aiResult.entities.roomTypePreference} />
+            <Field label="Budget" value={aiResult.entities.budget ? `${aiResult.entities.budget} EUR` : null} />
+          </div>
+          <Field label="Special Requests" value={aiResult.entities.specialRequests.join(", ")} />
+        </div>
+
+        <div className="space-y-3 border-t border-slate-100 pt-5">
+          <p className="text-xs uppercase tracking-[0.16em] text-slate-400">Missing Information</p>
+          {aiResult.missingInfo.missingFields.length > 0 ? (
+            <div className="flex flex-wrap gap-2">
+              {aiResult.missingInfo.missingFields.map((field) => (
+                <span key={field} className="rounded-full bg-amber-50 px-3 py-1 text-xs text-amber-700">
+                  {field.replace("_", " ")}
+                </span>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-emerald-700">All required reservation details are available.</p>
+          )}
+        </div>
+
+        <div className="space-y-3 border-t border-slate-100 pt-5">
+          <p className="text-xs uppercase tracking-[0.16em] text-slate-400">Suggested AI Reply</p>
+          <div className="rounded-2xl bg-slate-50 p-4">
+            <p className="text-sm text-slate-700">{aiResult.replySuggestion.message}</p>
+            <p className="mt-2 text-[11px] uppercase tracking-[0.16em] text-slate-400">
+              {aiResult.replySuggestion.type.replace("_", " ")}
+            </p>
+          </div>
+        </div>
+
+        {aiResult.availabilityPricing ? (
+          <div className="space-y-3 border-t border-slate-100 pt-5">
+            <p className="text-xs uppercase tracking-[0.16em] text-slate-400">Availability & Pricing</p>
+            <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-700">
+              <p>
+                <span className="font-medium">Suggested room:</span>{" "}
+                {aiResult.availabilityPricing.suggestedBestFit?.roomType.name ?? "No match"}
+              </p>
+              <p className="mt-2">
+                <span className="font-medium">Estimated total:</span>{" "}
+                {aiResult.availabilityPricing.estimatedTotalPrice
+                  ? `${aiResult.availabilityPricing.estimatedTotalPrice} ${aiResult.availabilityPricing.suggestedBestFit?.roomType.currency ?? "EUR"}`
+                  : "Pending"}
+              </p>
+              <p className="mt-2">
+                <span className="font-medium">Fallback option:</span>{" "}
+                {aiResult.availabilityPricing.fallbackOption?.roomType.name ?? "No fallback needed"}
+              </p>
+              <p className="mt-2">
+                <span className="font-medium">Pricing note:</span> {aiResult.availabilityPricing.pricingNote}
+              </p>
+            </div>
+          </div>
+        ) : null}
+
+        {aiResult.reservationDraftSuggestion ? (
+          <div className="space-y-3 border-t border-slate-100 pt-5">
+            <p className="text-xs uppercase tracking-[0.16em] text-slate-400">Reservation Draft Suggestion</p>
+            <div className="rounded-2xl bg-blue-50 p-4 text-sm text-slate-700">
+              <p>
+                <span className="font-medium">Candidate room:</span>{" "}
+                {aiResult.reservationDraftSuggestion.candidateRoomType}
+              </p>
+              <p className="mt-2">
+                <span className="font-medium">Estimated price:</span>{" "}
+                {aiResult.reservationDraftSuggestion.estimatedPrice
+                  ? `${aiResult.reservationDraftSuggestion.estimatedPrice} ${aiResult.reservationDraftSuggestion.currency}`
+                  : "Pending"}
+              </p>
+              <p className="mt-2">
+                <span className="font-medium">Confidence:</span>{" "}
+                {Math.round(aiResult.reservationDraftSuggestion.confidence * 100)}%
+              </p>
+              <p className="mt-2">{aiResult.reservationDraftSuggestion.notes}</p>
+            </div>
+          </div>
+        ) : null}
       </div>
     </div>
   );
