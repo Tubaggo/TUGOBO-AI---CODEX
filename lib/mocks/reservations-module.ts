@@ -37,6 +37,10 @@ export function getReservationRecord(reservationId: string): ReservationRecord |
   return listReservationRecords().find((item) => item.reservation.id === reservationId) ?? null;
 }
 
+export function getReservationByLeadId(leadId: string): ReservationRecord | null {
+  return listReservationRecords().find((item) => item.reservation.leadId === leadId) ?? null;
+}
+
 export function getReservableLeads() {
   return leads
     .filter((lead) => !reservations.some((reservation) => reservation.leadId === lead.id))
@@ -85,5 +89,106 @@ export function createDraftReservationFromLead(leadId: string): ReservationRecor
     assignedUser,
     lastActivityAt: lead.lastActivityAt,
     createdFromLead: true,
+  };
+}
+
+type CreateReservationFromDraftInput = {
+  tenantId: string;
+  actorUserId: string;
+  leadId: string;
+  conversationId: string | null;
+  candidateRoomType: string | null;
+  checkIn: string;
+  checkOut: string;
+  adultCount: number;
+  childCount: number;
+  estimatedTotalPrice: number;
+  currency: string;
+  notes: string;
+};
+
+export async function createReservationFromDraftSuggestion(
+  input: CreateReservationFromDraftInput,
+): Promise<{
+  reservationId: string;
+  message: string;
+  summary: {
+    reservationId: string;
+    guestName: string;
+    room: string | null;
+    checkIn: string;
+    checkOut: string;
+    estimatedPrice: number;
+    currency: string;
+    status: Reservation["status"];
+  };
+}> {
+  const existing = getReservationByLeadId(input.leadId);
+
+  if (existing) {
+    return {
+      reservationId: existing.reservation.id,
+      message: "✅ Reservation successfully created",
+      summary: {
+        reservationId: existing.reservation.id,
+        guestName: existing.reservation.guestName,
+        room: input.candidateRoomType,
+        checkIn: existing.reservation.checkIn,
+        checkOut: existing.reservation.checkOut,
+        estimatedPrice: existing.reservation.totalPrice,
+        currency: existing.reservation.currency,
+        status: existing.reservation.status,
+      },
+    };
+  }
+
+  const lead = leads.find((item) => item.id === input.leadId && item.tenantId === input.tenantId);
+
+  if (!lead) {
+    throw new Error(`Lead not found: ${input.leadId}`);
+  }
+
+  const timestamp = new Date().toISOString();
+  const reservation: Reservation = {
+    id: `res_${reservations.length + 1}`,
+    tenantId: input.tenantId,
+    leadId: lead.id,
+    propertyId: "property_blue_cove_main",
+    roomTypeId: null,
+    reservationCode: `TUG-${String(reservations.length + 1).padStart(4, "0")}`,
+    guestName: lead.fullName ?? "Guest",
+    guestEmail: lead.email,
+    guestPhone: lead.phone,
+    checkIn: input.checkIn,
+    checkOut: input.checkOut,
+    adultCount: input.adultCount,
+    childCount: input.childCount,
+    totalPrice: input.estimatedTotalPrice,
+    currency: input.currency,
+    status: "pending",
+    notes: `${input.notes}${input.candidateRoomType ? ` Room: ${input.candidateRoomType}.` : ""}`,
+    createdAt: timestamp,
+    updatedAt: timestamp,
+  };
+
+  reservations.unshift(reservation);
+  lead.status = "won";
+  lead.estimatedValue = input.estimatedTotalPrice;
+  lead.updatedAt = timestamp;
+  lead.lastActivityAt = timestamp;
+
+  return {
+    reservationId: reservation.id,
+    message: "✅ Reservation successfully created",
+    summary: {
+      reservationId: reservation.id,
+      guestName: reservation.guestName,
+      room: input.candidateRoomType,
+      checkIn: reservation.checkIn,
+      checkOut: reservation.checkOut,
+      estimatedPrice: reservation.totalPrice,
+      currency: reservation.currency,
+      status: reservation.status,
+    },
   };
 }

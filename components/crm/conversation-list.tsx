@@ -6,14 +6,46 @@ import { StatusBadge } from "./status-badge";
 type ConversationListProps = {
   items: ConversationListItem[];
   selectedConversationId: string;
+  demoScenarios?: Array<{
+    label: string;
+    conversationId: string;
+  }>;
 };
 
-export function ConversationList({ items, selectedConversationId }: ConversationListProps) {
+export function ConversationList({
+  items,
+  selectedConversationId,
+  demoScenarios = [],
+}: ConversationListProps) {
   return (
     <div className="flex h-full flex-col rounded-2xl border border-slate-200 bg-white">
       <div className="border-b border-slate-200 px-4 py-4">
         <h2 className="text-sm font-semibold text-slate-900">Inbox</h2>
         <p className="mt-1 text-xs text-slate-500">Unified guest conversations across channels.</p>
+        {demoScenarios.length > 0 ? (
+          <div className="mt-4 space-y-2">
+            <p className="text-[11px] uppercase tracking-[0.16em] text-slate-400">Demo Scenarios</p>
+            <div className="space-y-2">
+              {demoScenarios.map((scenario) => {
+                const selected = scenario.conversationId === selectedConversationId;
+
+                return (
+                  <Link
+                    key={scenario.conversationId}
+                    href={`/conversations?conversation=${scenario.conversationId}`}
+                    className={`block rounded-xl border px-3 py-2 text-sm transition ${
+                      selected
+                        ? "border-slate-900 bg-slate-950 text-white"
+                        : "border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300"
+                    }`}
+                  >
+                    {scenario.label}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        ) : null}
       </div>
       <div className="flex-1 overflow-y-auto">
         {items.map((item) => {

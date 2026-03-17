@@ -2,6 +2,7 @@ import { ChatThread } from "../../../components/crm/chat-thread";
 import { ConversationList } from "../../../components/crm/conversation-list";
 import { LeadInformationPanel } from "../../../components/crm/lead-information-panel";
 import { getMockConversationEngine } from "../../../lib/mocks/conversation-engine";
+import { getReservationByLeadId } from "../../../lib/mocks/reservations-module";
 import { assistantConfig, knowledgeBaseEntries } from "../../../lib/mocks/settings-module";
 
 type ConversationsPageProps = {
@@ -15,6 +16,11 @@ export default async function ConversationsPage({ searchParams }: ConversationsP
   const engine = getMockConversationEngine();
   const context = { tenantId: engine.tenantId, actorUserId: "user_staff" };
   const conversations = await engine.service.list(context);
+  const demoScenarios = [
+    { label: "Standard Booking", conversationId: "conv_anna" },
+    { label: "Family with Children", conversationId: "conv_julia" },
+    { label: "High Demand / Alternative Offer", conversationId: "conv_lina" },
+  ];
   const selectedConversationId = params.conversation ?? engine.defaultConversationId;
   const thread = await engine.service.getThread(context, selectedConversationId);
   const aiResult = engine.brain.process({
@@ -24,6 +30,7 @@ export default async function ConversationsPage({ searchParams }: ConversationsP
     currentLead: thread.lead,
     now: new Date("2026-03-16T12:00:00.000Z"),
   });
+  const existingReservation = thread.lead ? getReservationByLeadId(thread.lead.id) : null;
 
   return (
     <div className="space-y-4">
@@ -37,13 +44,23 @@ export default async function ConversationsPage({ searchParams }: ConversationsP
 
       <div className="grid gap-4 xl:grid-cols-[320px_minmax(0,1fr)_340px]">
         <div className="min-h-[720px]">
-          <ConversationList items={conversations} selectedConversationId={selectedConversationId} />
+          <ConversationList
+            items={conversations}
+            selectedConversationId={selectedConversationId}
+            demoScenarios={demoScenarios}
+          />
         </div>
         <div className="min-h-[720px]">
           <ChatThread thread={thread} aiResult={aiResult} assistantConfig={assistantConfig} />
         </div>
         <div className="min-h-[720px]">
-          <LeadInformationPanel thread={thread} aiResult={aiResult} />
+          <LeadInformationPanel
+            thread={thread}
+            aiResult={aiResult}
+            tenantId={engine.tenantId}
+            actorUserId={context.actorUserId}
+            existingReservation={existingReservation}
+          />
         </div>
       </div>
     </div>

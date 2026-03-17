@@ -1,10 +1,15 @@
 import type { ConversationThread } from "../../lib/domain";
 import type { AiReservationProcessingResult } from "../../lib/ai";
+import type { ReservationRecord } from "../../lib/mocks/reservations-module";
+import { CreateReservationAction } from "./create-reservation-action";
 import { StatusBadge } from "./status-badge";
 
 type LeadInformationPanelProps = {
   thread: ConversationThread;
   aiResult: AiReservationProcessingResult;
+  tenantId: string;
+  actorUserId: string;
+  existingReservation: ReservationRecord | null;
 };
 
 function Field({ label, value }: { label: string; value: string | number | null | undefined }) {
@@ -16,7 +21,13 @@ function Field({ label, value }: { label: string; value: string | number | null 
   );
 }
 
-export function LeadInformationPanel({ thread, aiResult }: LeadInformationPanelProps) {
+export function LeadInformationPanel({
+  thread,
+  aiResult,
+  tenantId,
+  actorUserId,
+  existingReservation,
+}: LeadInformationPanelProps) {
   const lead = thread.lead;
 
   return (
@@ -188,6 +199,16 @@ export function LeadInformationPanel({ thread, aiResult }: LeadInformationPanelP
               </p>
               <p className="mt-2">{aiResult.reservationDraftSuggestion.notes}</p>
             </div>
+            <CreateReservationAction
+              tenantId={tenantId}
+              actorUserId={actorUserId}
+              conversationId={thread.conversation.id}
+              leadId={aiResult.reservationDraftSuggestion.linkedLeadId}
+              adultCount={aiResult.entities.guestCount ?? aiResult.reservationDraftSuggestion.guestCount}
+              childCount={aiResult.entities.childCount ?? lead?.childCount ?? 0}
+              draft={aiResult.reservationDraftSuggestion}
+              existingReservation={existingReservation}
+            />
           </div>
         ) : null}
       </div>

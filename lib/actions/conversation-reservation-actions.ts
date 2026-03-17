@@ -2,18 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createReservationFromDraftSuggestion } from "../mocks/reservations-module";
-
-export type CreateReservationActionState = {
-  status: "idle" | "success" | "error";
-  message: string | null;
-  reservationId: string | null;
-};
-
-export const initialCreateReservationActionState: CreateReservationActionState = {
-  status: "idle",
-  message: null,
-  reservationId: null,
-};
+import type { CreateReservationActionState } from "./conversation-reservation-action-state";
 
 export async function createReservationFromConversationDraftAction(
   _previousState: CreateReservationActionState,
@@ -48,6 +37,7 @@ export async function createReservationFromConversationDraftAction(
       status: "error",
       message: "Reservation draft is incomplete. Refresh the page and try again.",
       reservationId: null,
+      summary: null,
     };
   }
 
@@ -77,6 +67,7 @@ export async function createReservationFromConversationDraftAction(
       status: "success",
       message: result.message,
       reservationId: result.reservationId,
+      summary: result.summary,
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Failed to create reservation.";
@@ -85,6 +76,7 @@ export async function createReservationFromConversationDraftAction(
       status: "error",
       message,
       reservationId: null,
+      summary: null,
     };
   }
 }
