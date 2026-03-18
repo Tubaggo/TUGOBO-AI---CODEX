@@ -180,6 +180,12 @@ export function LeadInformationPanel({
               <p className="mt-2">
                 <span className="font-medium">Pricing note:</span> {aiResult.availabilityPricing.pricingNote}
               </p>
+              {aiResult.availabilityPricing.reasonIfUnavailable ? (
+                <p className="mt-2">
+                  <span className="font-medium">Preferred room note:</span>{" "}
+                  {aiResult.availabilityPricing.reasonIfUnavailable}
+                </p>
+              ) : null}
             </div>
           </div>
         ) : null}

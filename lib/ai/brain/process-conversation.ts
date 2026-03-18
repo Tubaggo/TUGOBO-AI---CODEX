@@ -83,6 +83,7 @@ export function processConversation(
     qualification,
     assistantConfig: input.assistantConfig,
     knowledgeBase: input.knowledgeBase,
+    availabilityPricing,
   });
   const reservationDraftSuggestion = createDraftSuggestion({
     qualification,

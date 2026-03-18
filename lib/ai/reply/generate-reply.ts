@@ -1,4 +1,5 @@
 import type { AssistantConfig, KnowledgeBaseEntry } from "../../domain";
+import type { AvailabilityPricingResult } from "../../pricing";
 import type {
   AiDetectedIntent,
   AiLeadQualificationStatus,
@@ -54,6 +55,7 @@ export function generateReply(input: {
   qualification: AiLeadQualificationStatus;
   assistantConfig: AssistantConfig;
   knowledgeBase: KnowledgeBaseEntry[];
+  availabilityPricing: AvailabilityPricingResult | null;
 }): AssistantReplySuggestion {
   const action = decideAction({
     qualification: input.qualification,
@@ -92,18 +94,49 @@ export function generateReply(input: {
   }
 
   if (action === "create_reservation_draft") {
+    const suggestedRoom = input.availabilityPricing?.suggestedBestFit?.roomType.name ?? "our best available room";
+    const estimatedTotal = input.availabilityPricing?.estimatedTotalPrice;
+    const fallbackRoom = input.availabilityPricing?.fallbackOption?.roomType.name ?? null;
+    const fallbackCase = Boolean(input.availabilityPricing?.reasonIfUnavailable && fallbackRoom);
     const childNote =
       typeof input.entities.childCount === "number" && input.entities.childCount > 0
-        ? " I will prioritize family-friendly room options that are comfortable for children."
+        ? ` I will prioritize ${suggestedRoom} because it is better suited for children and family comfort.`
         : "";
 
     return {
       type: "offer",
-      message: `Thank you. I now have enough information to prepare a reservation draft and share the best available option.${childNote}`,
+      message: fallbackCase
+        ? `Thank you. Your preferred room is not available for those dates, but I can prepare an alternative offer for ${fallbackRoom}.${estimatedTotal ? ` The current estimated total is ${estimatedTotal} EUR.` : ""}`
+        : `Thank you. I can now prepare a reservation draft for ${suggestedRoom}.${estimatedTotal ? ` The current estimated total is ${estimatedTotal} EUR.` : ""}${childNote}`,
+      recommendedAction: action,
+      referencedKnowledgeBase: matches.map((entry) => entry.title),
+      confidence: fallbackCase
+        ? 0.76
+        : typeof input.entities.childCount === "number" && input.entities.childCount > 0
+          ? 0.91
+          : 0.94,
+    };
+  }
+
+  if (action === "prepare_offer" && input.availabilityPricing?.suggestedBestFit) {
+    const suggestedRoom = input.availabilityPricing.suggestedBestFit.roomType.name;
+    const estimatedTotal = input.availabilityPricing.estimatedTotalPrice;
+    const fallbackRoom = input.availabilityPricing.fallbackOption?.roomType.name ?? null;
+
+    return {
+      type: "offer",
+      message:
+        input.availabilityPricing.reasonIfUnavailable && fallbackRoom
+          ? `The requested room is unavailable, but I can offer ${fallbackRoom} as an alternative.${estimatedTotal ? ` The estimated total is ${estimatedTotal} EUR.` : ""}`
+          : `I can recommend ${suggestedRoom} for this stay.${estimatedTotal ? ` The estimated total is ${estimatedTotal} EUR.` : ""}`,
       recommendedAction: action,
       referencedKnowledgeBase: matches.map((entry) => entry.title),
       confidence:
-        typeof input.entities.childCount === "number" && input.entities.childCount > 0 ? 0.9 : 0.88,
+        input.availabilityPricing.reasonIfUnavailable && fallbackRoom
+          ? 0.74
+          : typeof input.entities.childCount === "number" && input.entities.childCount > 0
+            ? 0.9
+            : 0.93,
     };
   }
 
