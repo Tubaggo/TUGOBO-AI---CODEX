@@ -24,6 +24,19 @@ export function createDraftSuggestion(input: {
     "Best available matched room";
   const estimatedPrice =
     input.availabilityPricing?.estimatedTotalPrice ?? input.currentLead?.estimatedValue ?? null;
+  const fallbackOption = input.availabilityPricing?.fallbackOption?.roomType.name ?? null;
+  const familyNote =
+    typeof input.entities.childCount === "number" && input.entities.childCount > 0
+      ? ` Family-friendly setup prepared for ${input.entities.childCount} child${input.entities.childCount > 1 ? "ren" : ""}.`
+      : "";
+  const fallbackNote =
+    input.availabilityPricing?.reasonIfUnavailable && fallbackOption
+      ? ` Preferred room unavailable. Offer ${fallbackOption} as fallback.`
+      : "";
+  const confidenceBase =
+    input.availabilityPricing?.reasonIfUnavailable && fallbackOption
+      ? input.leadScore / 100 - 0.12
+      : input.leadScore / 100;
 
   return {
     linkedLeadId: input.currentLead?.id ?? null,
@@ -40,10 +53,10 @@ export function createDraftSuggestion(input: {
           input.entities.specialRequests.length > 0
             ? ` Special requests: ${input.entities.specialRequests.join(", ")}`
             : ""
-        }`
+        }${familyNote}${fallbackNote}`
       : input.entities.specialRequests.length > 0
-        ? `Special requests: ${input.entities.specialRequests.join(", ")}`
-        : "Draft prepared from qualified conversation data.",
-    confidence: Number(Math.min(0.98, Math.max(0.35, input.leadScore / 100)).toFixed(2)),
+        ? `Special requests: ${input.entities.specialRequests.join(", ")}${familyNote}${fallbackNote}`
+        : `Draft prepared from qualified conversation data.${familyNote}${fallbackNote}`,
+    confidence: Number(Math.min(0.98, Math.max(0.35, confidenceBase)).toFixed(2)),
   };
 }

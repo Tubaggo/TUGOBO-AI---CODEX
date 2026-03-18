@@ -24,7 +24,9 @@ export function suggestRoomOptions(request: AvailabilityPricingRequest): Availab
     return null;
   }
 
-  const availableRoomOptions = evaluateAvailability(request)
+  const allOptions = evaluateAvailability(request);
+
+  const availableRoomOptions = allOptions
     .filter((option) => !option.unavailableReason)
     .map((option) => {
       const pricing = calculatePricing({
@@ -47,6 +49,12 @@ export function suggestRoomOptions(request: AvailabilityPricingRequest): Availab
   const sorted = sortOptions(availableRoomOptions);
   const suggestedBestFit = sorted[0] ?? null;
   const fallbackOption = sorted.find((option) => option.roomType.id !== suggestedBestFit?.roomType.id) ?? null;
+  const requestedRoomPreference = request.roomTypePreference?.toLowerCase() ?? null;
+  const preferredRoom = request.roomTypePreference
+    ? allOptions.find(
+        (option) => option.roomType.name.toLowerCase() === requestedRoomPreference,
+      ) ?? null
+    : null;
 
   if (!suggestedBestFit) {
     return {
@@ -61,16 +69,34 @@ export function suggestRoomOptions(request: AvailabilityPricingRequest): Availab
     };
   }
 
+  const preferredUnavailable = Boolean(preferredRoom?.unavailableReason);
+  const fallbackDifference =
+    preferredUnavailable && fallbackOption
+      ? Math.abs(fallbackOption.estimatedTotal - suggestedBestFit.estimatedTotal)
+      : null;
+  const childrenNote =
+    typeof request.childCount === "number" && request.childCount > 0
+      ? ` Suitable for ${request.childCount} child${request.childCount > 1 ? "ren" : ""}.`
+      : "";
+  const fallbackNote =
+    preferredUnavailable && fallbackOption && fallbackDifference !== null
+      ? ` Preferred room unavailable. ${fallbackOption.roomType.name} is available instead, with a price difference of ${fallbackDifference} ${fallbackOption.roomType.currency}.`
+      : "";
+  const pricingNote = suggestedBestFit.pricingRule
+    ? `Seasonal pricing applied: ${suggestedBestFit.pricingRule.name}.${childrenNote}${fallbackNote}`
+    : `Base room pricing applied.${childrenNote}${fallbackNote}`;
+
   return {
     availableRoomOptions: sorted,
     suggestedBestFit,
     fallbackOption,
     estimatedTotalPrice: suggestedBestFit.estimatedTotal,
     priceBreakdown: suggestedBestFit.nightlyBreakdown,
-    availabilityConfidence: suggestedBestFit.availabilityConfidence,
-    reasonIfUnavailable: null,
-    pricingNote: suggestedBestFit.pricingRule
-      ? `Seasonal pricing applied: ${suggestedBestFit.pricingRule.name}.`
-      : "Base room pricing applied.",
+    availabilityConfidence:
+      preferredUnavailable && fallbackOption
+        ? Number(Math.max(0.55, suggestedBestFit.availabilityConfidence - 0.18).toFixed(2))
+        : suggestedBestFit.availabilityConfidence,
+    reasonIfUnavailable: preferredUnavailable ? preferredRoom?.unavailableReason ?? null : null,
+    pricingNote,
   };
 }

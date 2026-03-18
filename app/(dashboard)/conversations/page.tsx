@@ -19,7 +19,7 @@ export default async function ConversationsPage({ searchParams }: ConversationsP
   const demoScenarios = [
     { label: "Standard Booking", conversationId: "conv_anna" },
     { label: "Family with Children", conversationId: "conv_julia" },
-    { label: "High Demand / Alternative Offer", conversationId: "conv_lina" },
+    { label: "High Demand / Alternative Offer", conversationId: "conv_omar" },
   ];
   const selectedConversationId = params.conversation ?? engine.defaultConversationId;
   const thread = await engine.service.getThread(context, selectedConversationId);

@@ -92,13 +92,18 @@ export function generateReply(input: {
   }
 
   if (action === "create_reservation_draft") {
+    const childNote =
+      typeof input.entities.childCount === "number" && input.entities.childCount > 0
+        ? " I will prioritize family-friendly room options that are comfortable for children."
+        : "";
+
     return {
       type: "offer",
-      message:
-        "Thank you. I now have enough information to prepare a reservation draft and share the best available option.",
+      message: `Thank you. I now have enough information to prepare a reservation draft and share the best available option.${childNote}`,
       recommendedAction: action,
       referencedKnowledgeBase: matches.map((entry) => entry.title),
-      confidence: 0.88,
+      confidence:
+        typeof input.entities.childCount === "number" && input.entities.childCount > 0 ? 0.9 : 0.88,
     };
   }
 

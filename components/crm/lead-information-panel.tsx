@@ -148,9 +148,10 @@ export function LeadInformationPanel({
           <p className="text-xs uppercase tracking-[0.16em] text-slate-400">Suggested AI Reply</p>
           <div className="rounded-2xl bg-slate-50 p-4">
             <p className="text-sm text-slate-700">{aiResult.replySuggestion.message}</p>
-            <p className="mt-2 text-[11px] uppercase tracking-[0.16em] text-slate-400">
-              {aiResult.replySuggestion.type.replace("_", " ")}
-            </p>
+            <div className="mt-2 flex items-center justify-between gap-3 text-[11px] uppercase tracking-[0.16em] text-slate-400">
+              <span>{aiResult.replySuggestion.type.replace("_", " ")}</span>
+              <span>{Math.round(aiResult.replySuggestion.confidence * 100)}% confidence</span>
+            </div>
           </div>
         </div>
 
@@ -171,6 +172,10 @@ export function LeadInformationPanel({
               <p className="mt-2">
                 <span className="font-medium">Fallback option:</span>{" "}
                 {aiResult.availabilityPricing.fallbackOption?.roomType.name ?? "No fallback needed"}
+              </p>
+              <p className="mt-2">
+                <span className="font-medium">Availability confidence:</span>{" "}
+                {Math.round(aiResult.availabilityPricing.availabilityConfidence * 100)}%
               </p>
               <p className="mt-2">
                 <span className="font-medium">Pricing note:</span> {aiResult.availabilityPricing.pricingNote}
