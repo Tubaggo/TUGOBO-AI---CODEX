@@ -4,6 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "clean": "if exist .next rmdir /s /q .next",
+    "dev:clean": "npm run clean && npm run dev",
+    "reset:dev": "run-clean-dev.bat",
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",

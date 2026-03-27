@@ -93,12 +93,12 @@ export function LeadInformationPanel({
         </div>
 
         <div className="space-y-3 border-t border-slate-100 pt-5">
-          <p className="text-xs uppercase tracking-[0.16em] text-slate-400">AI Reservation Brain</p>
+          <p className="text-xs uppercase tracking-[0.16em] text-slate-400">Reservation Insight</p>
           <div className="grid gap-3 sm:grid-cols-2">
-            <Field label="Detected Intent" value={aiResult.intent.replace("_", " ")} />
-            <Field label="Lead Score" value={`${aiResult.leadScore.score} / 100`} />
-            <Field label="Qualification" value={aiResult.qualification.replace("_", " ")} />
-            <Field label="Next Action" value={aiResult.nextAction.replace("_", " ")} />
+            <Field label="Guest Request" value={aiResult.intent.replace("_", " ")} />
+            <Field label="Booking Readiness" value={`${aiResult.leadScore.score} / 100`} />
+            <Field label="Lead Stage" value={aiResult.qualification.replace("_", " ")} />
+            <Field label="Recommended Next Step" value={aiResult.nextAction.replace("_", " ")} />
           </div>
         </div>
 
@@ -145,7 +145,7 @@ export function LeadInformationPanel({
         </div>
 
         <div className="space-y-3 border-t border-slate-100 pt-5">
-          <p className="text-xs uppercase tracking-[0.16em] text-slate-400">Suggested AI Reply</p>
+          <p className="text-xs uppercase tracking-[0.16em] text-slate-400">Recommended Guest Reply</p>
           <div className="rounded-2xl bg-slate-50 p-4">
             <p className="text-sm text-slate-700">{aiResult.replySuggestion.message}</p>
             <div className="mt-2 flex items-center justify-between gap-3 text-[11px] uppercase tracking-[0.16em] text-slate-400">
@@ -157,10 +157,10 @@ export function LeadInformationPanel({
 
         {aiResult.availabilityPricing ? (
           <div className="space-y-3 border-t border-slate-100 pt-5">
-            <p className="text-xs uppercase tracking-[0.16em] text-slate-400">Availability & Pricing</p>
+            <p className="text-xs uppercase tracking-[0.16em] text-slate-400">Best Available Stay Option</p>
             <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-700">
               <p>
-                <span className="font-medium">Suggested room:</span>{" "}
+                <span className="font-medium">Recommended room:</span>{" "}
                 {aiResult.availabilityPricing.suggestedBestFit?.roomType.name ?? "No match"}
               </p>
               <p className="mt-2">
@@ -174,15 +174,15 @@ export function LeadInformationPanel({
                 {aiResult.availabilityPricing.fallbackOption?.roomType.name ?? "No fallback needed"}
               </p>
               <p className="mt-2">
-                <span className="font-medium">Availability confidence:</span>{" "}
+                <span className="font-medium">Availability likelihood:</span>{" "}
                 {Math.round(aiResult.availabilityPricing.availabilityConfidence * 100)}%
               </p>
               <p className="mt-2">
-                <span className="font-medium">Pricing note:</span> {aiResult.availabilityPricing.pricingNote}
+                <span className="font-medium">Offer note:</span> {aiResult.availabilityPricing.pricingNote}
               </p>
               {aiResult.availabilityPricing.reasonIfUnavailable ? (
                 <p className="mt-2">
-                  <span className="font-medium">Preferred room note:</span>{" "}
+                  <span className="font-medium">Availability update:</span>{" "}
                   {aiResult.availabilityPricing.reasonIfUnavailable}
                 </p>
               ) : null}
@@ -192,7 +192,7 @@ export function LeadInformationPanel({
 
         {aiResult.reservationDraftSuggestion ? (
           <div className="space-y-3 border-t border-slate-100 pt-5">
-            <p className="text-xs uppercase tracking-[0.16em] text-slate-400">Reservation Draft Suggestion</p>
+            <p className="text-xs uppercase tracking-[0.16em] text-slate-400">Ready-to-Prepare Reservation</p>
             <div className="rounded-2xl bg-blue-50 p-4 text-sm text-slate-700">
               <p>
                 <span className="font-medium">Candidate room:</span>{" "}

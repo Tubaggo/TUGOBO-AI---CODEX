@@ -106,8 +106,8 @@ export function generateReply(input: {
     return {
       type: "offer",
       message: fallbackCase
-        ? `Thank you. Your preferred room is not available for those dates, but I can prepare an alternative offer for ${fallbackRoom}.${estimatedTotal ? ` The current estimated total is ${estimatedTotal} EUR.` : ""}`
-        : `Thank you. I can now prepare a reservation draft for ${suggestedRoom}.${estimatedTotal ? ` The current estimated total is ${estimatedTotal} EUR.` : ""}${childNote}`,
+        ? `Thank you. Your preferred room is not available for those dates, but I can prepare a strong alternative offer for ${fallbackRoom}.${estimatedTotal ? ` The current estimated total is ${estimatedTotal} EUR.` : ""} If you would like, I can get this option ready for confirmation now.`
+        : `Thank you. I can now prepare a reservation draft for ${suggestedRoom}.${estimatedTotal ? ` The current estimated total is ${estimatedTotal} EUR.` : ""}${childNote} If you would like, I can prepare it for confirmation now.`,
       recommendedAction: action,
       referencedKnowledgeBase: matches.map((entry) => entry.title),
       confidence: fallbackCase
@@ -127,8 +127,8 @@ export function generateReply(input: {
       type: "offer",
       message:
         input.availabilityPricing.reasonIfUnavailable && fallbackRoom
-          ? `The requested room is unavailable, but I can offer ${fallbackRoom} as an alternative.${estimatedTotal ? ` The estimated total is ${estimatedTotal} EUR.` : ""}`
-          : `I can recommend ${suggestedRoom} for this stay.${estimatedTotal ? ` The estimated total is ${estimatedTotal} EUR.` : ""}`,
+          ? `The requested room is unavailable, but I can offer ${fallbackRoom} as an alternative.${estimatedTotal ? ` The estimated total is ${estimatedTotal} EUR.` : ""} If this suits you, I can prepare the next step right away.`
+          : `I can recommend ${suggestedRoom} for this stay.${estimatedTotal ? ` The estimated total is ${estimatedTotal} EUR.` : ""} If you would like, I can prepare the next step for you.`,
       recommendedAction: action,
       referencedKnowledgeBase: matches.map((entry) => entry.title),
       confidence:

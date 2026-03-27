@@ -26,6 +26,23 @@ function buildGuestReference(name: string | null): string {
   return name ? ` ${name}` : "";
 }
 
+function buildStaySummary(input: {
+  checkIn: string | null;
+  checkOut: string | null;
+  guestCount: number | null;
+  childCount: number | null;
+}): string {
+  const parts = [
+    input.checkIn && input.checkOut ? `from ${input.checkIn} to ${input.checkOut}` : null,
+    input.guestCount ? `for ${input.guestCount} guest${input.guestCount > 1 ? "s" : ""}` : null,
+    typeof input.childCount === "number" && input.childCount > 0
+      ? `including ${input.childCount} child${input.childCount > 1 ? "ren" : ""}`
+      : null,
+  ].filter(Boolean);
+
+  return parts.join(" ");
+}
+
 function translateField(field: MissingInfoField, language: string | null): string {
   const translations: Record<MissingInfoField, { en: string; tr: string }> = {
     guest_name: { en: "guest name", tr: "misafir adi" },
@@ -100,41 +117,55 @@ export function generateReservationReply(
   const estimatedTotal = aiResult.availabilityPricing?.estimatedTotalPrice;
   const fallbackRoom = aiResult.availabilityPricing?.fallbackOption?.roomType.name;
   const pricingNote = aiResult.availabilityPricing?.pricingNote;
-  const staySummary = [
-    checkIn && checkOut ? `from ${checkIn} to ${checkOut}` : null,
-    guestCount ? `for ${guestCount} guest${guestCount > 1 ? "s" : ""}` : null,
+  const availabilityUpdate = aiResult.availabilityPricing?.reasonIfUnavailable;
+  const staySummary = buildStaySummary({
+    checkIn,
+    checkOut,
+    guestCount,
+    childCount,
+  });
+  const familyFriendlyNote =
     typeof childCount === "number" && childCount > 0
-      ? `including ${childCount} child${childCount > 1 ? "ren" : ""}`
-      : null,
-  ]
-    .filter(Boolean)
-    .join(" ");
+      ? " It is one of our most comfortable options for families and gives children more space."
+      : "";
 
   if (language === "tr") {
     return {
       type: "offer",
-      message: `Harika bir haber${guestReference}! ${staySummary ? `${staySummary} ` : ""}${suggestedRoom} secenegimiz uygun gorunuyor.${
-        estimatedTotal ? ` Tahmini toplam tutar ${estimatedTotal} EUR civarindadir.` : ""
-      }${fallbackRoom ? ` Dilerseniz ${fallbackRoom} alternatifini de sunabiliriz.` : ""}${
-        pricingNote ? ` ${pricingNote}` : ""
-      } Rezervasyonunuzu hazirlamami ister misiniz?`,
+      message: availabilityUpdate
+        ? `Merhaba${guestReference}, talep ettiginiz oda bu tarihlerde cok sinirli gorunuyor. Sizi bekletmemek icin ${fallbackRoom ?? suggestedRoom} secenegimizi onerebilirim.${
+            staySummary ? ` ${staySummary} konaklama icin` : ""
+          }${estimatedTotal ? ` tahmini toplam tutar ${estimatedTotal} EUR civarindadir.` : "."}${
+            pricingNote ? ` ${pricingNote}` : ""
+          } Uygunsa bu alternatifi sizin icin ayirmami ister misiniz?`
+        : `Harika bir haber${guestReference}! ${suggestedRoom}${
+            staySummary ? ` ${staySummary}` : ""
+          } icin uygun gorunuyor.${estimatedTotal ? ` Tahmini toplam tutar ${estimatedTotal} EUR civarindadir.` : ""}${
+            familyFriendlyNote
+          }${pricingNote ? ` ${pricingNote}` : ""} Uygunsa rezervasyonunuzu hazirlamami ister misiniz?`,
       recommendedAction:
         aiResult.qualification === "offer_ready" ? "create_reservation_draft" : "prepare_offer",
       referencedKnowledgeBase: [],
-      confidence: 0.9,
+      confidence: availabilityUpdate ? 0.82 : 0.9,
     };
   }
 
   return {
     type: "offer",
-    message: `Great news${guestReference}! We have ${suggestedRoom} available${
-      staySummary ? ` ${staySummary}` : ""
-    }.${estimatedTotal ? ` The estimated total is ${estimatedTotal} EUR.` : ""}${
-      fallbackRoom ? ` If you prefer, we can also offer ${fallbackRoom} as an alternative.` : ""
-    }${pricingNote ? ` ${pricingNote}` : ""} Would you like me to prepare this reservation for you?`,
+    message: availabilityUpdate
+      ? `Thank you${guestReference}. Your preferred room is very limited for these dates, so to keep a good option available I would recommend ${
+          fallbackRoom ?? suggestedRoom
+        } instead.${staySummary ? ` It works well ${staySummary}.` : ""}${
+          estimatedTotal ? ` The estimated total is ${estimatedTotal} EUR.` : ""
+        }${pricingNote ? ` ${pricingNote}` : ""} If you would like, I can hold this option and prepare the reservation for you now.`
+      : `Great news${guestReference}! ${suggestedRoom} is available${
+          staySummary ? ` ${staySummary}` : ""
+        }.${estimatedTotal ? ` The estimated total is ${estimatedTotal} EUR.` : ""}${
+          familyFriendlyNote
+        }${pricingNote ? ` ${pricingNote}` : ""} Would you like me to prepare this option for you?`,
     recommendedAction:
       aiResult.qualification === "offer_ready" ? "create_reservation_draft" : "prepare_offer",
     referencedKnowledgeBase: [],
-    confidence: 0.9,
+    confidence: availabilityUpdate ? 0.82 : 0.9,
   };
 }

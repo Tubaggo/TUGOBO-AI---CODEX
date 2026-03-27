@@ -157,6 +157,21 @@ export const mockPricingRules: PricingRule[] = [
     createdAt: "2026-03-01T10:00:00.000Z",
     updatedAt: "2026-03-01T10:00:00.000Z",
   },
+  {
+    id: "rule_summer_bungalow",
+    propertyId: "property_blue_cove_river",
+    roomTypeId: "room_riverfront",
+    name: "Summer Riverfront",
+    seasonName: "Summer",
+    startDate: "2026-06-15T00:00:00.000Z",
+    endDate: "2026-09-15T00:00:00.000Z",
+    minNights: 2,
+    pricePerNight: 295,
+    currency: "EUR",
+    isActive: true,
+    createdAt: "2026-03-01T10:00:00.000Z",
+    updatedAt: "2026-03-01T10:00:00.000Z",
+  },
 ];
 
 export const mockRoomBlackouts: Record<string, Array<{ start: string; end: string }>> = {
