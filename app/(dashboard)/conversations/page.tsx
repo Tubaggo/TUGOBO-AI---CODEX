@@ -11,6 +11,25 @@ type ConversationsPageProps = {
   }>;
 };
 
+function resolveConversationId(input: {
+  requestedConversationId?: string;
+  availableConversationIds: string[];
+  defaultConversationId: string;
+}) {
+  if (
+    input.requestedConversationId &&
+    input.availableConversationIds.includes(input.requestedConversationId)
+  ) {
+    return input.requestedConversationId;
+  }
+
+  if (input.availableConversationIds.includes(input.defaultConversationId)) {
+    return input.defaultConversationId;
+  }
+
+  return input.availableConversationIds[0] ?? input.defaultConversationId;
+}
+
 export default async function ConversationsPage({ searchParams }: ConversationsPageProps) {
   const params = searchParams ? await searchParams : {};
   const engine = getMockConversationEngine();
@@ -21,8 +40,26 @@ export default async function ConversationsPage({ searchParams }: ConversationsP
     { label: "Family with Children", conversationId: "conv_julia" },
     { label: "High Demand / Alternative Offer", conversationId: "conv_omar" },
   ];
-  const selectedConversationId = params.conversation ?? engine.defaultConversationId;
-  const thread = await engine.service.getThread(context, selectedConversationId);
+  const availableConversationIds = conversations.map((item) => item.conversation.id);
+  const selectedConversationId = resolveConversationId({
+    requestedConversationId: typeof params.conversation === "string" ? params.conversation : undefined,
+    availableConversationIds,
+    defaultConversationId: engine.defaultConversationId,
+  });
+
+  let thread;
+
+  try {
+    thread = await engine.service.getThread(context, selectedConversationId);
+  } catch {
+    const fallbackConversationId = resolveConversationId({
+      availableConversationIds,
+      defaultConversationId: engine.defaultConversationId,
+    });
+
+    thread = await engine.service.getThread(context, fallbackConversationId);
+  }
+
   const aiResult = engine.brain.process({
     thread,
     assistantConfig,

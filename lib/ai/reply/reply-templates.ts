@@ -42,7 +42,7 @@ export function buildFollowUpReply(missingFields: MissingInfoField[]): Assistant
 
   return {
     type: "clarification",
-    message: `I'd be happy to help with your stay. Could you please share ${sentence}?`,
+    message: `I'd be very happy to help with your stay. When you have a moment, could you share ${sentence}?`,
     recommendedAction: "ask_missing_information",
     referencedKnowledgeBase: [],
     confidence: 0.92,
@@ -62,7 +62,7 @@ export function buildIntentReply(intent: AiDetectedIntent): AssistantReplySugges
 
   return {
     type: "follow_up",
-    message: "Thank you. I am reviewing the details and will guide you with the next booking step.",
+    message: "Thank you. Let me look after the details and come back with the best next step for your stay.",
     recommendedAction: "wait_for_guest_reply",
     referencedKnowledgeBase: [],
     confidence: 0.72,

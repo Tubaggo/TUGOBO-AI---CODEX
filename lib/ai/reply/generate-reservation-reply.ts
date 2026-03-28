@@ -76,8 +76,8 @@ function buildMissingInfoReply(input: GenerateReservationReplyInput): AssistantR
     type: "clarification",
     message:
       language === "tr"
-        ? `Merhaba${guestReference}, size en uygun secenegi hazirlayabilmem icin lutfen ${fields.join(", ")} bilgisini paylasir misiniz?`
-        : `Hello${guestReference}, I'd be happy to help with your reservation request. To prepare the right option for you, could you please share ${joined}?`,
+        ? `Merhaba${guestReference}, size en uygun secenegi hazirlayabilmem icin musait oldugunuzda ${fields.join(", ")} bilgisini paylasabilir misiniz?`
+        : `Hello${guestReference}, I’d be happy to help with your stay. When you have a moment, could you please share ${joined}?`,
     recommendedAction: "ask_missing_information",
     referencedKnowledgeBase: [],
     confidence: 0.91,
@@ -137,7 +137,7 @@ export function generateReservationReply(
             staySummary ? ` ${staySummary} konaklama icin` : ""
           }${estimatedTotal ? ` tahmini toplam tutar ${estimatedTotal} EUR civarindadir.` : "."}${
             pricingNote ? ` ${pricingNote}` : ""
-          } Uygunsa bu alternatifi sizin icin ayirmami ister misiniz?`
+          } Uygunsa bu alternatifi sizin icin hemen ayirmami ister misiniz?`
         : `Harika bir haber${guestReference}! ${suggestedRoom}${
             staySummary ? ` ${staySummary}` : ""
           } icin uygun gorunuyor.${estimatedTotal ? ` Tahmini toplam tutar ${estimatedTotal} EUR civarindadir.` : ""}${
@@ -153,16 +153,16 @@ export function generateReservationReply(
   return {
     type: "offer",
     message: availabilityUpdate
-      ? `Thank you${guestReference}. Your preferred room is very limited for these dates, so to keep a good option available I would recommend ${
+      ? `Thank you${guestReference}. Your preferred room is in very short supply for those dates, so to keep a good option available I would recommend ${
           fallbackRoom ?? suggestedRoom
-        } instead.${staySummary ? ` It works well ${staySummary}.` : ""}${
-          estimatedTotal ? ` The estimated total is ${estimatedTotal} EUR.` : ""
-        }${pricingNote ? ` ${pricingNote}` : ""} If you would like, I can hold this option and prepare the reservation for you now.`
-      : `Great news${guestReference}! ${suggestedRoom} is available${
+        } instead.${staySummary ? ` It would work well ${staySummary}.` : ""}${
+          estimatedTotal ? ` The total would be around ${estimatedTotal} EUR.` : ""
+        }${pricingNote ? ` ${pricingNote}` : ""} If you’d like, I can hold this option and prepare the reservation for you now.`
+      : `Wonderful news${guestReference}! ${suggestedRoom} is available${
           staySummary ? ` ${staySummary}` : ""
-        }.${estimatedTotal ? ` The estimated total is ${estimatedTotal} EUR.` : ""}${
+        }.${estimatedTotal ? ` The total would be around ${estimatedTotal} EUR.` : ""}${
           familyFriendlyNote
-        }${pricingNote ? ` ${pricingNote}` : ""} Would you like me to prepare this option for you?`,
+        }${pricingNote ? ` ${pricingNote}` : ""} If you’d like, I can prepare this option for you now.`,
     recommendedAction:
       aiResult.qualification === "offer_ready" ? "create_reservation_draft" : "prepare_offer",
     referencedKnowledgeBase: [],
