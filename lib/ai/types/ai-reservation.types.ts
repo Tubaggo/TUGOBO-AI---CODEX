@@ -1,5 +1,5 @@
-import type { AssistantConfig, ConversationThread, KnowledgeBaseEntry, Lead } from "../../domain";
-import type { AvailabilityPricingResult } from "../../pricing";
+import type { AssistantConfig, ConversationThread, KnowledgeBaseEntry, Lead } from "../../domain/types";
+import type { AvailabilityPricingResult } from "../../pricing/types";
 
 export type AiDetectedIntent =
   | "reservation_request"

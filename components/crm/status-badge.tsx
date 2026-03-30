@@ -1,4 +1,4 @@
-import type { ConversationStatus, LeadStatus, ReservationStatus } from "../../lib/domain";
+import type { ConversationStatus, LeadStatus, ReservationStatus } from "../../lib/domain/types";
 
 const styles: Record<ConversationStatus | LeadStatus | ReservationStatus, string> = {
   open: "bg-blue-50 text-blue-700 ring-blue-200",

@@ -1,4 +1,4 @@
-import type { AssistantConfig, AutomationFlow, KnowledgeBaseEntry } from "../domain";
+import type { AssistantConfig, AutomationFlow, KnowledgeBaseEntry } from "../domain/types";
 
 export const assistantConfig: AssistantConfig = {
   id: "assistant_config_blue_cove",

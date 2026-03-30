@@ -3,7 +3,7 @@ import type {
   ConversationStatus,
   ConversationThread,
   ReservationExtraction,
-} from "../domain";
+} from "../domain/types";
 import type {
   ConversationLeadSyncResult,
   ConversationRepository,

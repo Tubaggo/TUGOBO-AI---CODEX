@@ -1,4 +1,4 @@
-import type { AssistantConfig, ConversationThread } from "../../domain";
+import type { AssistantConfig, ConversationThread } from "../../domain/types";
 import type {
   AiReservationProcessingResult,
   AssistantReplySuggestion,
@@ -76,8 +76,8 @@ function buildMissingInfoReply(input: GenerateReservationReplyInput): AssistantR
     type: "clarification",
     message:
       language === "tr"
-        ? `Merhaba${guestReference}, size en uygun secenegi hazirlayabilmem icin musait oldugunuzda ${fields.join(", ")} bilgisini paylasabilir misiniz?`
-        : `Hello${guestReference}, I’d be happy to help with your stay. When you have a moment, could you please share ${joined}?`,
+        ? `Merhaba${guestReference}, size en guzel secenegi hazirlayabilmem icin ${fields.join(", ")} bilgisini de paylasir misiniz?`
+        : `Hello${guestReference}, I'd love to help with your stay. Could you share ${joined} so I can suggest the best room for you?`,
     recommendedAction: "ask_missing_information",
     referencedKnowledgeBase: [],
     confidence: 0.91,
@@ -102,7 +102,7 @@ export function generateReservationReply(
       type: "handoff",
       message:
         input.assistantConfig.fallbackMessage ??
-        "I will connect you with our reservation team for further assistance.",
+        "I'm bringing in our reservations team so they can look after this for you.",
       recommendedAction: "handoff_to_human",
       referencedKnowledgeBase: [],
       confidence: 0.95,
@@ -133,16 +133,8 @@ export function generateReservationReply(
     return {
       type: "offer",
       message: availabilityUpdate
-        ? `Merhaba${guestReference}, talep ettiginiz oda bu tarihlerde cok sinirli gorunuyor. Sizi bekletmemek icin ${fallbackRoom ?? suggestedRoom} secenegimizi onerebilirim.${
-            staySummary ? ` ${staySummary} konaklama icin` : ""
-          }${estimatedTotal ? ` tahmini toplam tutar ${estimatedTotal} EUR civarindadir.` : "."}${
-            pricingNote ? ` ${pricingNote}` : ""
-          } Uygunsa bu alternatifi sizin icin hemen ayirmami ister misiniz?`
-        : `Harika bir haber${guestReference}! ${suggestedRoom}${
-            staySummary ? ` ${staySummary}` : ""
-          } icin uygun gorunuyor.${estimatedTotal ? ` Tahmini toplam tutar ${estimatedTotal} EUR civarindadir.` : ""}${
-            familyFriendlyNote
-          }${pricingNote ? ` ${pricingNote}` : ""} Uygunsa rezervasyonunuzu hazirlamami ister misiniz?`,
+        ? `Merhaba${guestReference}, bu tarihler cok talep goruyor ve istediginiz oda hizla doluyor. ${fallbackRoom ?? suggestedRoom} su an uygun ve rahat bir alternatif olur.${estimatedTotal ? ` Toplam tutar yaklasik ${estimatedTotal} EUR civarinda.` : ""}${pricingNote ? ` ${pricingNote}` : ""} Isterseniz sizin icin hemen ayirayim.`
+        : `Harika bir secim${guestReference}, ${suggestedRoom}${staySummary ? ` ${staySummary}` : ""} icin cok guzel duruyor.${estimatedTotal ? ` Toplam tutar yaklasik ${estimatedTotal} EUR civarinda.` : ""}${familyFriendlyNote}${pricingNote ? ` ${pricingNote}` : ""} Isterseniz sizin icin hazirlayayim.`,
       recommendedAction:
         aiResult.qualification === "offer_ready" ? "create_reservation_draft" : "prepare_offer",
       referencedKnowledgeBase: [],
@@ -153,16 +145,8 @@ export function generateReservationReply(
   return {
     type: "offer",
     message: availabilityUpdate
-      ? `Thank you${guestReference}. Your preferred room is in very short supply for those dates, so to keep a good option available I would recommend ${
-          fallbackRoom ?? suggestedRoom
-        } instead.${staySummary ? ` It would work well ${staySummary}.` : ""}${
-          estimatedTotal ? ` The total would be around ${estimatedTotal} EUR.` : ""
-        }${pricingNote ? ` ${pricingNote}` : ""} If you’d like, I can hold this option and prepare the reservation for you now.`
-      : `Wonderful news${guestReference}! ${suggestedRoom} is available${
-          staySummary ? ` ${staySummary}` : ""
-        }.${estimatedTotal ? ` The total would be around ${estimatedTotal} EUR.` : ""}${
-          familyFriendlyNote
-        }${pricingNote ? ` ${pricingNote}` : ""} If you’d like, I can prepare this option for you now.`,
+      ? `Thank you${guestReference}, those dates are in high demand and your preferred room is going quickly. ${fallbackRoom ?? suggestedRoom} is still available and would make for a very comfortable stay.${staySummary ? ` It suits a stay ${staySummary}.` : ""}${estimatedTotal ? ` The total would be around ${estimatedTotal} EUR.` : ""}${pricingNote ? ` ${pricingNote}` : ""} Would you like me to hold it for you?`
+      : `Wonderful news${guestReference}, ${suggestedRoom} is available${staySummary ? ` ${staySummary}` : ""}.${estimatedTotal ? ` The total would be around ${estimatedTotal} EUR.` : ""}${familyFriendlyNote}${pricingNote ? ` ${pricingNote}` : ""} Would you like me to prepare it for you now?`,
     recommendedAction:
       aiResult.qualification === "offer_ready" ? "create_reservation_draft" : "prepare_offer",
     referencedKnowledgeBase: [],

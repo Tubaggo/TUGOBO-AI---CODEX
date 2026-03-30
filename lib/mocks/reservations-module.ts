@@ -1,4 +1,4 @@
-import type { Conversation, Lead, Reservation, User } from "../domain";
+import type { Conversation, Lead, Reservation, User } from "../domain/types";
 import { conversations, leads, reservations, users } from "./conversation-inbox";
 
 export type ReservationRecord = {

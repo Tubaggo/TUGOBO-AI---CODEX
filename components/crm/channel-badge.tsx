@@ -1,4 +1,4 @@
-import type { ChannelType } from "../../lib/domain";
+import type { ChannelType } from "../../lib/domain/types";
 
 const channelStyles: Record<ChannelType, string> = {
   whatsapp: "bg-emerald-50 text-emerald-700 ring-emerald-200",

@@ -42,7 +42,7 @@ export function buildFollowUpReply(missingFields: MissingInfoField[]): Assistant
 
   return {
     type: "clarification",
-    message: `I'd be very happy to help with your stay. When you have a moment, could you share ${sentence}?`,
+    message: `I'd love to help you plan this stay. Could you send me ${sentence} so I can suggest the best option for you?`,
     recommendedAction: "ask_missing_information",
     referencedKnowledgeBase: [],
     confidence: 0.92,
@@ -53,7 +53,7 @@ export function buildIntentReply(intent: AiDetectedIntent): AssistantReplySugges
   if (intent === "human_handoff" || intent === "cancellation_change") {
     return {
       type: "handoff",
-      message: "I will connect you with our reservation team so they can assist you further.",
+      message: "I'm bringing in our reservations team so they can take great care of this for you.",
       recommendedAction: "handoff_to_human",
       referencedKnowledgeBase: [],
       confidence: 0.95,
@@ -62,7 +62,7 @@ export function buildIntentReply(intent: AiDetectedIntent): AssistantReplySugges
 
   return {
     type: "follow_up",
-    message: "Thank you. Let me look after the details and come back with the best next step for your stay.",
+    message: "Thanks for reaching out. I'll put together the best next step for your stay and guide you from there.",
     recommendedAction: "wait_for_guest_reply",
     referencedKnowledgeBase: [],
     confidence: 0.72,

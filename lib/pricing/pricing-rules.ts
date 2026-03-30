@@ -136,7 +136,7 @@ export const mockPricingRules: PricingRule[] = [
     startDate: "2026-06-15T00:00:00.000Z",
     endDate: "2026-09-15T00:00:00.000Z",
     minNights: 3,
-    pricePerNight: 470,
+    pricePerNight: 450,
     currency: "EUR",
     isActive: true,
     createdAt: "2026-03-01T10:00:00.000Z",

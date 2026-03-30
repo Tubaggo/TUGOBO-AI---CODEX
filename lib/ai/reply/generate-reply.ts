@@ -1,5 +1,5 @@
-import type { AssistantConfig, KnowledgeBaseEntry } from "../../domain";
-import type { AvailabilityPricingResult } from "../../pricing";
+import type { AssistantConfig, KnowledgeBaseEntry } from "../../domain/types";
+import type { AvailabilityPricingResult } from "../../pricing/types";
 import type {
   AiDetectedIntent,
   AiLeadQualificationStatus,
@@ -68,7 +68,7 @@ export function generateReply(input: {
       type: "handoff",
       message:
         input.assistantConfig.fallbackMessage ??
-        "I will connect you with our reservation team for further assistance.",
+        "I'm bringing in our reservations team so they can look after this for you.",
       recommendedAction: action,
       referencedKnowledgeBase: [],
       confidence: 0.95,
@@ -84,9 +84,7 @@ export function generateReply(input: {
   if (action === "answer_property_question" && matches.length > 0) {
     return {
       type: "follow_up",
-      message: `Here is the most relevant information for your question: ${matches
-        .map((entry) => entry.content)
-        .join(" ")}`,
+      message: `Happy to help. ${matches.map((entry) => entry.content).join(" ")}`,
       recommendedAction: action,
       referencedKnowledgeBase: matches.map((entry) => entry.title),
       confidence: 0.83,
@@ -106,8 +104,8 @@ export function generateReply(input: {
     return {
       type: "offer",
       message: fallbackCase
-        ? `Thank you. Your preferred room is no longer available for those dates, but ${fallbackRoom} would still be a very good option.${estimatedTotal ? ` The current total comes to around ${estimatedTotal} EUR.` : ""} If you like, I can prepare it for you now.`
-        : `Lovely, I can now prepare a reservation draft for ${suggestedRoom}.${estimatedTotal ? ` The current total comes to around ${estimatedTotal} EUR.` : ""}${childNote} If you would like to move forward, I can get everything ready now.`,
+        ? `Those dates are in high demand and your preferred room has gone quickly. ${fallbackRoom} is still available and would make for a very comfortable stay.${estimatedTotal ? ` The current total is around ${estimatedTotal} EUR.` : ""} Would you like me to hold it for you?`
+        : `${suggestedRoom} would be a lovely fit for this stay.${estimatedTotal ? ` The current total is around ${estimatedTotal} EUR.` : ""}${childNote} Shall I get it ready for you?`,
       recommendedAction: action,
       referencedKnowledgeBase: matches.map((entry) => entry.title),
       confidence: fallbackCase
@@ -127,8 +125,8 @@ export function generateReply(input: {
       type: "offer",
       message:
         input.availabilityPricing.reasonIfUnavailable && fallbackRoom
-          ? `The room you asked for is in very short supply, although ${fallbackRoom} is still available and would keep the stay comfortable.${estimatedTotal ? ` The total would be around ${estimatedTotal} EUR.` : ""} If it suits you, I can hold the next step for you now.`
-          : `${suggestedRoom} would be a lovely fit for this stay.${estimatedTotal ? ` The total would be around ${estimatedTotal} EUR.` : ""} If you would like, I can prepare the next step for you.`,
+          ? `Those dates are very popular and your preferred room is almost gone. ${fallbackRoom} is still available and would keep the stay very comfortable.${estimatedTotal ? ` The total would be around ${estimatedTotal} EUR.` : ""} Would you like me to secure it for you?`
+          : `${suggestedRoom} would be a lovely fit for this stay.${estimatedTotal ? ` The total would be around ${estimatedTotal} EUR.` : ""} Would you like me to reserve this option for you?`,
       recommendedAction: action,
       referencedKnowledgeBase: matches.map((entry) => entry.title),
       confidence:

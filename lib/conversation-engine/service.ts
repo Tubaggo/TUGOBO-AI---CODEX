@@ -1,7 +1,7 @@
 import { extractLeadDataFromMessage } from "./lead-extraction.helper";
 import { resolveConversationState } from "./conversation-state.manager";
-import { ConversationsService } from "../services";
-import type { ConversationRepository, LeadRepository, MessageRepository } from "../services";
+import { ConversationsService } from "../services/conversations.service";
+import type { ConversationRepository, LeadRepository, MessageRepository } from "../services/contracts";
 
 export function createConversationEngineService(input: {
   conversations: ConversationRepository;

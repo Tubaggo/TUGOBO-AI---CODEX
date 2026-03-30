@@ -1,8 +1,7 @@
-import type { ConversationThread } from "../../lib/domain";
-import type { AiReservationProcessingResult } from "../../lib/ai";
+import type { ConversationThread } from "../../lib/domain/types";
+import type { AiReservationProcessingResult } from "../../lib/ai/types/ai-reservation.types";
 import type { ReservationRecord } from "../../lib/mocks/reservations-module";
 import { CreateReservationAction } from "./create-reservation-action";
-import { StatusBadge } from "./status-badge";
 
 type LeadInformationPanelProps = {
   thread: ConversationThread;
@@ -28,198 +27,144 @@ export function LeadInformationPanel({
   actorUserId,
   existingReservation,
 }: LeadInformationPanelProps) {
+  const safeConversation = thread.conversation;
   const lead = thread.lead;
+  const recommendedRoom =
+    aiResult.availabilityPricing?.suggestedBestFit?.roomType.name ??
+    aiResult.reservationDraftSuggestion?.candidateRoomType ??
+    lead?.roomTypePreference;
+  const estimatedTotal =
+    aiResult.availabilityPricing?.estimatedTotalPrice ??
+    aiResult.reservationDraftSuggestion?.estimatedPrice ??
+    lead?.estimatedValue;
+  const currency =
+    aiResult.availabilityPricing?.suggestedBestFit?.roomType.currency ??
+    aiResult.reservationDraftSuggestion?.currency ??
+    lead?.currency ??
+    "EUR";
+  const readinessTone =
+    aiResult.leadScore.readiness === "high"
+      ? "bg-emerald-50 text-emerald-700 ring-emerald-200"
+      : aiResult.leadScore.readiness === "medium"
+        ? "bg-amber-50 text-amber-700 ring-amber-200"
+        : "bg-slate-100 text-slate-700 ring-slate-200";
 
   return (
-    <div className="flex h-full flex-col rounded-2xl border border-slate-200 bg-white">
-      <div className="border-b border-slate-200 px-5 py-4">
-        <h2 className="text-sm font-semibold text-slate-900">Lead Panel</h2>
-        <p className="mt-1 text-xs text-slate-500">Extracted reservation details and staff notes.</p>
+    <div className="flex h-full flex-col overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_24px_80px_-48px_rgba(15,23,42,0.4)]">
+      <div className="border-b border-slate-200 bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.14),_transparent_40%),linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] px-5 py-4">
+        <h2 className="text-sm font-semibold text-slate-900">AI Assistant Insights</h2>
+        <p className="mt-1 text-xs text-slate-500">The key booking signals your team needs to convert this chat.</p>
       </div>
 
       <div className="space-y-5 overflow-y-auto px-5 py-5">
-        <div className="space-y-3">
-          <Field label="Guest" value={lead?.fullName ?? thread.conversation.guestName} />
-          <Field label="Email" value={lead?.email ?? thread.conversation.guestEmail} />
-          <Field label="Phone" value={lead?.phone ?? thread.conversation.guestPhone} />
-          <Field label="Language" value={lead?.language ?? thread.conversation.guestLanguage} />
-        </div>
-
-        {lead ? (
-          <>
-            <div className="space-y-3 border-t border-slate-100 pt-5">
-              <Field label="Check-in" value={lead.checkIn ? new Date(lead.checkIn).toLocaleDateString("en-GB") : null} />
-              <Field label="Check-out" value={lead.checkOut ? new Date(lead.checkOut).toLocaleDateString("en-GB") : null} />
-              <Field label="Guests" value={lead.guestCount} />
-              <Field label="Children" value={lead.childCount} />
-              <Field label="Room" value={lead.roomTypePreference} />
-              <Field label="Budget" value={lead.budget ? `${lead.budget} ${lead.currency}` : null} />
-              <Field
-                label="Estimated value"
-                value={lead.estimatedValue ? `${lead.estimatedValue} ${lead.currency}` : null}
-              />
-            </div>
-            <div className="space-y-3 border-t border-slate-100 pt-5">
-              <div className="flex items-center justify-between">
-                <p className="text-xs uppercase tracking-[0.16em] text-slate-400">Lead status</p>
-                <StatusBadge status={lead.status} />
-              </div>
-              <Field label="Priority" value={lead.priority} />
-              <Field label="Temperature" value={lead.temperature} />
-              <Field label="Tags" value={lead.tags.join(", ")} />
-            </div>
-          </>
-        ) : null}
-
-        <div className="space-y-3 border-t border-slate-100 pt-5">
-          <p className="text-xs uppercase tracking-[0.16em] text-slate-400">Internal notes</p>
-          {thread.internalNotes.length > 0 ? (
-            thread.internalNotes.map((note) => (
-              <div key={note.id} className="rounded-2xl bg-slate-50 p-4">
-                <p className="text-sm text-slate-700">{note.content}</p>
-                <p className="mt-2 text-[11px] text-slate-400">
-                  {new Date(note.createdAt).toLocaleString("en-GB", {
-                    day: "2-digit",
-                    month: "short",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </p>
-              </div>
-            ))
-          ) : (
-            <p className="text-sm text-slate-500">No internal notes yet.</p>
-          )}
-        </div>
-
-        <div className="space-y-3 border-t border-slate-100 pt-5">
-          <p className="text-xs uppercase tracking-[0.16em] text-slate-400">Reservation Insight</p>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <Field label="Guest Request" value={aiResult.intent.replace("_", " ")} />
-            <Field label="Booking Readiness" value={`${aiResult.leadScore.score} / 100`} />
-            <Field label="Lead Stage" value={aiResult.qualification.replace("_", " ")} />
-            <Field label="Recommended Next Step" value={aiResult.nextAction.replace("_", " ")} />
-          </div>
-        </div>
-
-        <div className="space-y-3 border-t border-slate-100 pt-5">
-          <p className="text-xs uppercase tracking-[0.16em] text-slate-400">Extracted Fields</p>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <Field label="Guest Name" value={aiResult.entities.guestName} />
-            <Field label="Phone" value={aiResult.entities.phone} />
-            <Field label="Email" value={aiResult.entities.email} />
-            <Field label="Language" value={aiResult.entities.language} />
+        <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-4">
+          <p className="text-xs uppercase tracking-[0.16em] text-slate-400">Guest summary</p>
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
             <Field
-              label="Check-in"
+              label="Dates"
               value={
-                aiResult.entities.checkIn ? new Date(aiResult.entities.checkIn).toLocaleDateString("en-GB") : null
+                lead?.checkIn && lead?.checkOut
+                  ? `${new Date(lead.checkIn).toLocaleDateString("en-GB")} - ${new Date(lead.checkOut).toLocaleDateString("en-GB")}`
+                  : null
               }
             />
             <Field
-              label="Check-out"
+              label="Guests"
               value={
-                aiResult.entities.checkOut ? new Date(aiResult.entities.checkOut).toLocaleDateString("en-GB") : null
+                typeof lead?.guestCount === "number"
+                  ? `${lead.guestCount} guests${lead.childCount ? `, ${lead.childCount} children` : ""}`
+                  : null
               }
             />
-            <Field label="Guests" value={aiResult.entities.guestCount} />
-            <Field label="Children" value={aiResult.entities.childCount} />
-            <Field label="Room Preference" value={aiResult.entities.roomTypePreference} />
-            <Field label="Budget" value={aiResult.entities.budget ? `${aiResult.entities.budget} EUR` : null} />
+            <Field
+              label="Budget"
+              value={
+                lead?.budget
+                  ? `${lead.budget} ${lead.currency}`
+                  : aiResult.entities.budget
+                    ? `${aiResult.entities.budget} EUR`
+                    : null
+              }
+            />
+            <Field label="Guest" value={lead?.fullName ?? safeConversation?.guestName} />
           </div>
-          <Field label="Special Requests" value={aiResult.entities.specialRequests.join(", ")} />
         </div>
 
-        <div className="space-y-3 border-t border-slate-100 pt-5">
-          <p className="text-xs uppercase tracking-[0.16em] text-slate-400">Missing Information</p>
+        <div className="rounded-[24px] border border-slate-200 bg-white p-4">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-xs uppercase tracking-[0.16em] text-slate-400">Booking readiness</p>
+              <p className="mt-2 text-3xl font-semibold text-slate-950">{aiResult.leadScore.score}/100</p>
+            </div>
+            <span className={`rounded-full px-3 py-1 text-xs font-medium capitalize ring-1 ${readinessTone}`}>
+              {aiResult.leadScore.readiness}
+            </span>
+          </div>
+          <p className="mt-3 text-sm text-slate-600">
+            {aiResult.missingInfo.missingFields.length > 0
+              ? `AI still needs ${aiResult.missingInfo.missingFields.length} more detail${aiResult.missingInfo.missingFields.length > 1 ? "s" : ""} before the booking is fully locked.`
+              : "AI has enough information to guide this conversation toward a reservation."}
+          </p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <Field label="Lead stage" value={aiResult.qualification.replace("_", " ")} />
+            <Field label="Next step" value={aiResult.nextAction.replace("_", " ")} />
+          </div>
           {aiResult.missingInfo.missingFields.length > 0 ? (
-            <div className="flex flex-wrap gap-2">
+            <div className="mt-4 flex flex-wrap gap-2">
               {aiResult.missingInfo.missingFields.map((field) => (
                 <span key={field} className="rounded-full bg-amber-50 px-3 py-1 text-xs text-amber-700">
                   {field.replace("_", " ")}
                 </span>
               ))}
             </div>
-          ) : (
-            <p className="text-sm text-emerald-700">All required reservation details are available.</p>
-          )}
+          ) : null}
         </div>
 
-        <div className="space-y-3 border-t border-slate-100 pt-5">
-          <p className="text-xs uppercase tracking-[0.16em] text-slate-400">Recommended Guest Reply</p>
-          <div className="rounded-2xl bg-slate-50 p-4">
-            <p className="text-sm text-slate-700">{aiResult.replySuggestion.message}</p>
-            <div className="mt-2 flex items-center justify-between gap-3 text-[11px] uppercase tracking-[0.16em] text-slate-400">
-              <span>{aiResult.replySuggestion.type.replace("_", " ")}</span>
-              <span>{Math.round(aiResult.replySuggestion.confidence * 100)}% confidence</span>
+        <div className="rounded-[24px] border border-slate-200 bg-slate-950 p-4 text-white">
+          <p className="text-xs uppercase tracking-[0.16em] text-slate-400">Reservation recommendation</p>
+          <div className="mt-4 space-y-4">
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.16em] text-slate-400">Recommended room</p>
+              <p className="mt-1 text-lg font-semibold text-white">{recommendedRoom ?? "Review required"}</p>
             </div>
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.16em] text-slate-400">Estimated total price</p>
+              <p className="mt-1 text-lg font-semibold text-white">
+                {typeof estimatedTotal === "number" ? `${estimatedTotal} ${currency}` : "Pending"}
+              </p>
+            </div>
+            {aiResult.availabilityPricing?.pricingNote ? (
+              <p className="text-sm text-slate-300">{aiResult.availabilityPricing.pricingNote}</p>
+            ) : null}
           </div>
         </div>
 
-        {aiResult.availabilityPricing ? (
-          <div className="space-y-3 border-t border-slate-100 pt-5">
-            <p className="text-xs uppercase tracking-[0.16em] text-slate-400">Best Available Stay Option</p>
-            <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-700">
-              <p>
-                <span className="font-medium">Recommended room:</span>{" "}
-                {aiResult.availabilityPricing.suggestedBestFit?.roomType.name ?? "No match"}
-              </p>
-              <p className="mt-2">
-                <span className="font-medium">Estimated total:</span>{" "}
-                {aiResult.availabilityPricing.estimatedTotalPrice
-                  ? `${aiResult.availabilityPricing.estimatedTotalPrice} ${aiResult.availabilityPricing.suggestedBestFit?.roomType.currency ?? "EUR"}`
-                  : "Pending"}
-              </p>
-              <p className="mt-2">
-                <span className="font-medium">Fallback option:</span>{" "}
-                {aiResult.availabilityPricing.fallbackOption?.roomType.name ?? "No fallback needed"}
-              </p>
-              <p className="mt-2">
-                <span className="font-medium">Availability likelihood:</span>{" "}
-                {Math.round(aiResult.availabilityPricing.availabilityConfidence * 100)}%
-              </p>
-              <p className="mt-2">
-                <span className="font-medium">Offer note:</span> {aiResult.availabilityPricing.pricingNote}
-              </p>
-              {aiResult.availabilityPricing.reasonIfUnavailable ? (
-                <p className="mt-2">
-                  <span className="font-medium">Availability update:</span>{" "}
-                  {aiResult.availabilityPricing.reasonIfUnavailable}
-                </p>
-              ) : null}
-            </div>
+        <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-4">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-xs uppercase tracking-[0.16em] text-slate-400">AI Suggested Reply</p>
+            <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-medium text-slate-600">
+              {Math.round(aiResult.replySuggestion.confidence * 100)}% confidence
+            </span>
           </div>
-        ) : null}
+          <p className="mt-3 text-sm leading-6 text-slate-700">{aiResult.replySuggestion.message}</p>
+        </div>
 
         {aiResult.reservationDraftSuggestion ? (
-          <div className="space-y-3 border-t border-slate-100 pt-5">
-            <p className="text-xs uppercase tracking-[0.16em] text-slate-400">Ready-to-Prepare Reservation</p>
-            <div className="rounded-2xl bg-blue-50 p-4 text-sm text-slate-700">
-              <p>
-                <span className="font-medium">Candidate room:</span>{" "}
-                {aiResult.reservationDraftSuggestion.candidateRoomType}
-              </p>
-              <p className="mt-2">
-                <span className="font-medium">Estimated price:</span>{" "}
-                {aiResult.reservationDraftSuggestion.estimatedPrice
-                  ? `${aiResult.reservationDraftSuggestion.estimatedPrice} ${aiResult.reservationDraftSuggestion.currency}`
-                  : "Pending"}
-              </p>
-              <p className="mt-2">
-                <span className="font-medium">Confidence:</span>{" "}
-                {Math.round(aiResult.reservationDraftSuggestion.confidence * 100)}%
-              </p>
-              <p className="mt-2">{aiResult.reservationDraftSuggestion.notes}</p>
+          <div className="rounded-[24px] border border-slate-200 bg-white p-4">
+            <p className="text-xs uppercase tracking-[0.16em] text-slate-400">Create reservation</p>
+            <p className="mt-2 text-sm text-slate-600">{aiResult.reservationDraftSuggestion.notes}</p>
+            <div className="mt-4">
+              <CreateReservationAction
+                tenantId={tenantId}
+                actorUserId={actorUserId}
+                conversationId={safeConversation?.id ?? ""}
+                leadId={aiResult.reservationDraftSuggestion.linkedLeadId}
+                adultCount={aiResult.entities.guestCount ?? aiResult.reservationDraftSuggestion.guestCount}
+                childCount={aiResult.entities.childCount ?? lead?.childCount ?? 0}
+                draft={aiResult.reservationDraftSuggestion}
+                existingReservation={existingReservation}
+              />
             </div>
-            <CreateReservationAction
-              tenantId={tenantId}
-              actorUserId={actorUserId}
-              conversationId={thread.conversation.id}
-              leadId={aiResult.reservationDraftSuggestion.linkedLeadId}
-              adultCount={aiResult.entities.guestCount ?? aiResult.reservationDraftSuggestion.guestCount}
-              childCount={aiResult.entities.childCount ?? lead?.childCount ?? 0}
-              draft={aiResult.reservationDraftSuggestion}
-              existingReservation={existingReservation}
-            />
           </div>
         ) : null}
       </div>

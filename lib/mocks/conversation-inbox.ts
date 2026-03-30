@@ -8,7 +8,7 @@ import type {
   Message,
   Reservation,
   User,
-} from "../domain";
+} from "../domain/types";
 import type {
   ConversationListFilter,
   ConversationRepository,
@@ -20,7 +20,7 @@ import type {
   MessageRepository,
   UpdateLeadInput,
   UpdateConversationInput,
-} from "../services";
+} from "../services/contracts";
 
 export const tenantId = "tenant_blue_cove";
 
@@ -107,6 +107,20 @@ export const channels: Channel[] = [
     updatedAt: "2026-01-06T08:00:00.000Z",
   },
 ];
+
+const fallbackChannel: Channel = {
+  id: "channel_fallback_webchat",
+  tenantId,
+  type: "webchat",
+  displayName: "Fallback Web Chat",
+  status: "connected",
+  externalAccountId: null,
+  webhookUrl: null,
+  metadata: null,
+  connectedAt: null,
+  createdAt: "2026-01-01T00:00:00.000Z",
+  updatedAt: "2026-01-01T00:00:00.000Z",
+};
 
 export const conversations: Conversation[] = [
   {
@@ -258,7 +272,7 @@ export const leads: Lead[] = [
     childCount: 1,
     roomTypePreference: "Family Villa",
     budget: 1800,
-    estimatedValue: 1680,
+    estimatedValue: 1800,
     currency: "EUR",
     sourceChannel: "instagram",
     status: "offer_sent",
@@ -310,7 +324,7 @@ export const leads: Lead[] = [
     childCount: 2,
     roomTypePreference: "Family Villa",
     budget: 2200,
-    estimatedValue: 1880,
+    estimatedValue: 1800,
     currency: "EUR",
     sourceChannel: "whatsapp",
     status: "qualified",
@@ -366,7 +380,7 @@ export const messages: Message[] = [
     senderType: "assistant",
     senderUserId: null,
     messageType: "text",
-    content: "Great choice, those dates are lovely here. Let me see which sea view options we can offer you.",
+    content: "Great choice, those dates are beautiful here. Let me check our loveliest sea view rooms for you.",
     rawPayload: null,
     createdAt: "2026-03-12T08:06:00.000Z",
   },
@@ -416,7 +430,7 @@ export const messages: Message[] = [
     senderType: "assistant",
     senderUserId: null,
     messageType: "text",
-    content: "Merhaba, belirtilen tarihler icin uygunluk mevcut. Iletisim numaranizi paylasabilir misiniz?",
+    content: "Merhaba, bu tarihler icin bungalow cok guzel duruyor. Konaklamanizi hazirlayabilmem icin telefon numaranizi da paylasir misiniz?",
     rawPayload: null,
     createdAt: "2026-03-10T19:03:00.000Z",
   },
@@ -436,7 +450,7 @@ export const messages: Message[] = [
     senderType: "assistant",
     senderUserId: null,
     messageType: "text",
-    content: "That sounds like a beautiful family stay. I’ll prepare our most comfortable family-friendly option so everyone has plenty of space.",
+    content: "That sounds like a lovely family stay. Our Family Villa would give everyone more space and comfort, and I can prepare the details for you.",
     rawPayload: null,
     createdAt: "2026-03-13T09:18:00.000Z",
   },
@@ -456,7 +470,7 @@ export const messages: Message[] = [
     senderType: "assistant",
     senderUserId: null,
     messageType: "text",
-    content: "Those dates are very popular and the sea view rooms are already limited. If needed, I can also offer a quieter alternative with a lovely setting so you don’t miss the stay.",
+    content: "Those dates are very popular and our sea view rooms are going quickly. I do have a beautiful Family Villa available though, with more space and a very comfortable setup. Would you like me to hold it for you?",
     rawPayload: null,
     createdAt: "2026-03-08T12:25:00.000Z",
   },
@@ -500,7 +514,7 @@ export const reservations: Reservation[] = [
     checkOut: "2026-08-07T00:00:00.000Z",
     adultCount: 5,
     childCount: 1,
-    totalPrice: 1680,
+    totalPrice: 1800,
     currency: "EUR",
     status: "pending",
     notes: "Guest requested airport transfer pricing.",
@@ -533,10 +547,10 @@ export const reservations: Reservation[] = [
 function getConversationListItems(): ConversationListItem[] {
   return conversations
     .slice()
-    .sort((left, right) => right.lastMessageAt!.localeCompare(left.lastMessageAt!))
+    .sort((left, right) => (right.lastMessageAt ?? "").localeCompare(left.lastMessageAt ?? ""))
     .map((conversation) => ({
       conversation,
-      channel: channels.find((channel) => channel.id === conversation.channelId)!,
+      channel: channels.find((channel) => channel.id === conversation.channelId) ?? fallbackChannel,
       assignedUser: users.find((user) => user.id === conversation.assignedUserId) ?? null,
       lead: leads.find((lead) => lead.conversationId === conversation.id) ?? null,
       lastMessagePreview:
@@ -783,6 +797,6 @@ export function createMockConversationEngineRepositories() {
     messages: new MockMessageRepository(),
     leads: new MockLeadRepository(),
     tenantId,
-    defaultConversationId: conversations[0].id,
+    defaultConversationId: conversations[0]?.id ?? "",
   };
 }

@@ -1,4 +1,4 @@
-import type { Lead } from "../../domain";
+import type { Lead } from "../../domain/types";
 import { detectIntent } from "../intent/detect-intent";
 import { extractReservationEntities } from "../entities/extract-reservation-entities";
 import { normalizeEntities } from "../entities/normalize-entities";
@@ -7,7 +7,7 @@ import { scoreLead } from "../qualification/score-lead";
 import { qualifyLead } from "../qualification/qualify-lead";
 import { generateReply } from "../reply/generate-reply";
 import { createDraftSuggestion } from "../reservation/create-draft-suggestion";
-import { suggestRoomOptions } from "../../pricing";
+import { suggestRoomOptions } from "../../pricing/suggest-room-options";
 import type {
   AiReservationProcessingContext,
   AiReservationProcessingResult,

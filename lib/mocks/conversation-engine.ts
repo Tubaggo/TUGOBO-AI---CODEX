@@ -1,5 +1,5 @@
-import { TugoboReservationBrain } from "../ai";
-import { createConversationEngineService } from "../conversation-engine";
+import { TugoboReservationBrain } from "../ai/brain/reservation-brain";
+import { createConversationEngineService } from "../conversation-engine/service";
 import { createMockConversationEngineRepositories } from "./conversation-inbox";
 
 export function getMockConversationEngine() {

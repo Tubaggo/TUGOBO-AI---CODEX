@@ -3,8 +3,8 @@ import type {
   ExtractedReservationEntities,
   ReservationDraftSuggestion,
 } from "../types/ai-reservation.types";
-import type { Lead } from "../../domain";
-import type { AvailabilityPricingResult } from "../../pricing";
+import type { Lead } from "../../domain/types";
+import type { AvailabilityPricingResult } from "../../pricing/types";
 
 export function createDraftSuggestion(input: {
   qualification: AiLeadQualificationStatus;
