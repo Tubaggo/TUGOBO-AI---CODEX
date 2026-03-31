@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { AssistantConfig, ConversationThread } from "../../lib/domain/types";
 import type { AiReservationProcessingResult } from "../../lib/ai/types/ai-reservation.types";
 import { generateReservationReply } from "../../lib/ai/reply/generate-reservation-reply";
@@ -9,6 +9,8 @@ type ConversationThreadProps = {
   thread: ConversationThread;
   aiResult: AiReservationProcessingResult;
   assistantConfig: AssistantConfig;
+  scenarioLabel?: string | null;
+  onAssistantMessageShown?: () => void;
 };
 
 const channelThemes = {
@@ -45,29 +47,54 @@ const senderStyles = {
   system: "bg-slate-800 text-white",
 } as const;
 
+const scenarioMeta = {
+  "Standard Booking": {
+    banner: "Smooth and confident booking flow",
+    detail: "The AI confirms dates, aligns the room, and keeps the path to reservation obvious.",
+    toneClass: "from-sky-500/12 via-white to-white",
+  },
+  "Family with Children": {
+    banner: "Warm, family-oriented guidance",
+    detail: "The AI highlights comfort, space, and reassurance for parents booking together.",
+    toneClass: "from-amber-400/14 via-white to-white",
+  },
+  "High Demand / Alternative Offer": {
+    banner: "Urgency with a smart alternative",
+    detail: "The AI protects the booking by signaling demand and immediately steering the guest to another fit.",
+    toneClass: "from-rose-500/12 via-white to-white",
+  },
+} as const;
+
+type ScenarioLabel = keyof typeof scenarioMeta;
+
 export function ConversationThreadView({
   thread,
   aiResult,
   assistantConfig,
+  scenarioLabel,
+  onAssistantMessageShown,
 }: ConversationThreadProps) {
   const safeConversation = thread.conversation;
   const safeMessages = Array.isArray(thread.messages) ? thread.messages : [];
   const [generatedReply, setGeneratedReply] = useState("");
   const [replyMeta, setReplyMeta] = useState<{ type: string; confidence: number } | null>(null);
   const [activeChannel, setActiveChannel] = useState(safeConversation?.source ?? "webchat");
-  const [visibleCount, setVisibleCount] = useState(1);
+  const [visibleCount, setVisibleCount] = useState(0);
   const [isTyping, setIsTyping] = useState(false);
+  const announcedMessageIdsRef = useRef<Set<string>>(new Set());
 
   const nextHiddenMessage = safeMessages[visibleCount];
   const theme = channelThemes[activeChannel];
+  const scenario = scenarioLabel ? scenarioMeta[scenarioLabel as ScenarioLabel] : null;
   const visibleMessages = useMemo(() => safeMessages.slice(0, visibleCount), [safeMessages, visibleCount]);
 
   useEffect(() => {
     setActiveChannel(safeConversation?.source ?? "webchat");
-    setVisibleCount(1);
+    setVisibleCount(0);
     setIsTyping(false);
     setGeneratedReply("");
     setReplyMeta(null);
+    announcedMessageIdsRef.current = new Set();
   }, [safeConversation?.id, safeConversation?.source]);
 
   useEffect(() => {
@@ -77,8 +104,13 @@ export function ConversationThreadView({
     }
 
     const upcomingMessage = safeMessages[visibleCount];
-    const showTyping = upcomingMessage.senderType === "assistant" || upcomingMessage.senderType === "human";
-    const delay = showTyping ? 1400 : 320;
+    const showTyping = upcomingMessage.senderType === "assistant";
+    const delay =
+      upcomingMessage.senderType === "assistant"
+        ? 1600
+        : upcomingMessage.senderType === "human"
+          ? 1200
+          : 1050;
 
     setIsTyping(showTyping);
     const timer = window.setTimeout(() => {
@@ -88,6 +120,19 @@ export function ConversationThreadView({
 
     return () => window.clearTimeout(timer);
   }, [safeMessages, visibleCount]);
+
+  useEffect(() => {
+    const latestVisibleAssistantMessage = visibleMessages[visibleMessages.length - 1];
+
+    if (
+      latestVisibleAssistantMessage &&
+      (latestVisibleAssistantMessage.senderType === "assistant" || latestVisibleAssistantMessage.senderType === "human") &&
+      !announcedMessageIdsRef.current.has(latestVisibleAssistantMessage.id)
+    ) {
+      announcedMessageIdsRef.current.add(latestVisibleAssistantMessage.id);
+      onAssistantMessageShown?.();
+    }
+  }, [onAssistantMessageShown, visibleMessages]);
 
   function handleGenerateReply() {
     try {
@@ -125,15 +170,37 @@ export function ConversationThreadView({
               <span className={`rounded-full px-2.5 py-1 text-[11px] font-medium ${theme.pill}`}>
                 {theme.label} demo
               </span>
+              {scenarioLabel ? (
+                <span className="rounded-full border border-slate-200 bg-white/80 px-2.5 py-1 text-[11px] font-medium text-slate-600">
+                  {scenarioLabel}
+                </span>
+              ) : null}
             </div>
             <p className="mt-1 text-xs text-slate-500">
               {safeConversation?.guestEmail ?? safeConversation?.guestPhone ?? "No contact captured"}
             </p>
-            <p className="mt-2 text-sm text-slate-600">
-              Guest messages come in, AI responds instantly, and the booking path stays visible.
-            </p>
+            <div
+              className={`mt-3 rounded-2xl border border-white/60 bg-gradient-to-r px-3 py-3 shadow-sm ${
+                scenario?.toneClass ?? "from-slate-100/70 via-white to-white"
+              }`}
+            >
+              <p className="text-sm font-medium text-slate-800">
+                {scenario?.banner ?? "Live AI reservation assistant demo"}
+              </p>
+              <p className="mt-1 text-xs text-slate-500">
+                {scenario?.detail ?? "Guest messages come in, AI responds quickly, and the booking path stays visible."}
+              </p>
+            </div>
           </div>
-          <div className="flex rounded-2xl border border-slate-200 bg-white/90 p-1 shadow-sm">
+          <div className="rounded-[22px] border border-slate-200 bg-white/90 p-1 shadow-sm">
+            <div className="mb-2 flex items-center justify-between px-2">
+              <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-slate-400">Live channels</p>
+              <span className="inline-flex items-center gap-1 text-[11px] text-emerald-600">
+                <span className="live-dot h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_0_4px_rgba(16,185,129,0.14)]" />
+                synced
+              </span>
+            </div>
+            <div className="flex">
             {(["whatsapp", "instagram", "webchat"] as const).map((channel) => {
               const isActive = channel === activeChannel;
               const optionTheme = channelThemes[channel];
@@ -144,13 +211,20 @@ export function ConversationThreadView({
                   type="button"
                   onClick={() => setActiveChannel(channel)}
                   className={`rounded-xl px-3 py-2 text-sm font-medium transition ${
-                    isActive ? optionTheme.accent : "text-slate-600 hover:bg-slate-50"
+                    isActive
+                      ? `${optionTheme.accent} shadow-lg`
+                      : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                   }`}
+                  aria-pressed={isActive}
                 >
-                  {optionTheme.label}
+                  <span className="inline-flex items-center gap-2">
+                    <span className={`h-2 w-2 rounded-full ${isActive ? "live-dot bg-white" : "bg-slate-300"}`} />
+                    {optionTheme.label}
+                  </span>
                 </button>
               );
             })}
+            </div>
           </div>
         </div>
       </div>
@@ -162,11 +236,20 @@ export function ConversationThreadView({
             className={`message-enter flex ${message.senderType === "guest" ? "justify-start" : "justify-end"}`}
           >
             <div className="max-w-[85%]">
-              <p className="mb-1 text-[11px] uppercase tracking-[0.16em] text-slate-400">
-                {message.senderType === "assistant" ? "AI assistant" : message.senderType}
-              </p>
+              <div className="mb-1 flex items-center gap-2">
+                {message.senderType === "assistant" ? (
+                  <span className="rounded-full bg-sky-100 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-sky-700">
+                    AI Suggested Reply
+                  </span>
+                ) : null}
+                <p className="text-[11px] uppercase tracking-[0.16em] text-slate-400">
+                  {message.senderType === "assistant" ? "AI assistant" : message.senderType}
+                </p>
+              </div>
               <div
-                className={`rounded-[24px] px-4 py-3 text-sm shadow-[0_14px_30px_-22px_rgba(15,23,42,0.6)] ${senderStyles[message.senderType]}`}
+                className={`rounded-[24px] px-4 py-3 text-sm shadow-[0_14px_30px_-22px_rgba(15,23,42,0.6)] ${
+                  message.senderType === "assistant" ? "ai-message-bubble" : ""
+                } ${senderStyles[message.senderType]}`}
               >
                 {message.content}
               </div>
@@ -191,18 +274,23 @@ export function ConversationThreadView({
             className={`message-enter flex ${nextHiddenMessage.senderType === "guest" ? "justify-start" : "justify-end"}`}
           >
             <div className="max-w-[85%]">
-              <p className="mb-1 text-[11px] uppercase tracking-[0.16em] text-slate-400">
-                {nextHiddenMessage.senderType === "assistant" ? "AI assistant" : nextHiddenMessage.senderType}
-              </p>
+              <div className="mb-1 flex items-center gap-2">
+                {nextHiddenMessage.senderType === "assistant" ? (
+                  <span className="rounded-full bg-sky-100 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-sky-700">
+                    AI Suggested Reply
+                  </span>
+                ) : null}
+                <p className="text-[11px] uppercase tracking-[0.16em] text-slate-400">
+                  {nextHiddenMessage.senderType === "assistant" ? "AI assistant" : nextHiddenMessage.senderType}
+                </p>
+              </div>
               <div className="inline-flex items-center gap-2 rounded-[24px] bg-white px-4 py-3 shadow-[0_14px_30px_-22px_rgba(15,23,42,0.6)]">
-                <span className={`h-2.5 w-2.5 animate-bounce rounded-full ${theme.typingDot}`} />
-                <span
-                  className={`h-2.5 w-2.5 animate-bounce rounded-full ${theme.typingDot} [animation-delay:120ms]`}
-                />
-                <span
-                  className={`h-2.5 w-2.5 animate-bounce rounded-full ${theme.typingDot} [animation-delay:240ms]`}
-                />
-                <span className="ml-1 text-sm text-slate-500">typing...</span>
+                <span className="text-sm font-medium text-slate-600">AI is typing...</span>
+                <span className="typing-dots" aria-hidden="true">
+                  <span className={`typing-dot ${theme.typingDot}`} />
+                  <span className={`typing-dot ${theme.typingDot}`} />
+                  <span className={`typing-dot ${theme.typingDot}`} />
+                </span>
               </div>
             </div>
           </div>

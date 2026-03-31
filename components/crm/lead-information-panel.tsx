@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import type { ConversationThread } from "../../lib/domain/types";
 import type { AiReservationProcessingResult } from "../../lib/ai/types/ai-reservation.types";
 import type { ReservationRecord } from "../../lib/mocks/reservations-module";
@@ -9,6 +12,8 @@ type LeadInformationPanelProps = {
   tenantId: string;
   actorUserId: string;
   existingReservation: ReservationRecord | null;
+  scenarioLabel?: string | null;
+  analysisPulseKey?: number;
 };
 
 function Field({ label, value }: { label: string; value: string | number | null | undefined }) {
@@ -26,9 +31,12 @@ export function LeadInformationPanel({
   tenantId,
   actorUserId,
   existingReservation,
+  scenarioLabel,
+  analysisPulseKey = 0,
 }: LeadInformationPanelProps) {
   const safeConversation = thread.conversation;
   const lead = thread.lead;
+  const [activeHighlight, setActiveHighlight] = useState<"readiness" | "room" | "total" | null>(null);
   const recommendedRoom =
     aiResult.availabilityPricing?.suggestedBestFit?.roomType.name ??
     aiResult.reservationDraftSuggestion?.candidateRoomType ??
@@ -48,12 +56,44 @@ export function LeadInformationPanel({
       : aiResult.leadScore.readiness === "medium"
         ? "bg-amber-50 text-amber-700 ring-amber-200"
         : "bg-slate-100 text-slate-700 ring-slate-200";
+  const scenarioMessage =
+    scenarioLabel === "Family with Children"
+      ? "Family-friendly cues are being emphasized in the AI recommendation."
+      : scenarioLabel === "High Demand / Alternative Offer"
+        ? "Demand signals and fallback inventory are being surfaced to protect the booking."
+        : "The AI is keeping the path to reservation clear and low-friction.";
+
+  useEffect(() => {
+    if (analysisPulseKey === 0) {
+      return;
+    }
+
+    const highlightOrder: Array<"readiness" | "room" | "total"> = ["readiness", "room", "total"];
+    const timers = highlightOrder.map((item, index) =>
+      window.setTimeout(() => {
+        setActiveHighlight(item);
+      }, index * 260),
+    );
+    const clearTimer = window.setTimeout(() => {
+      setActiveHighlight(null);
+    }, highlightOrder.length * 260 + 1100);
+
+    return () => {
+      for (const timer of timers) {
+        window.clearTimeout(timer);
+      }
+      window.clearTimeout(clearTimer);
+    };
+  }, [analysisPulseKey]);
 
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_24px_80px_-48px_rgba(15,23,42,0.4)]">
       <div className="border-b border-slate-200 bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.14),_transparent_40%),linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] px-5 py-4">
         <h2 className="text-sm font-semibold text-slate-900">AI Assistant Insights</h2>
         <p className="mt-1 text-xs text-slate-500">The key booking signals your team needs to convert this chat.</p>
+        <p className="mt-3 rounded-2xl border border-sky-100 bg-sky-50/80 px-3 py-2 text-xs text-sky-700">
+          {scenarioMessage}
+        </p>
       </div>
 
       <div className="space-y-5 overflow-y-auto px-5 py-5">
@@ -90,7 +130,9 @@ export function LeadInformationPanel({
           </div>
         </div>
 
-        <div className="rounded-[24px] border border-slate-200 bg-white p-4">
+        <div
+          className={`rounded-[24px] border border-slate-200 bg-white p-4 transition ${activeHighlight === "readiness" ? "insight-react" : ""}`}
+        >
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs uppercase tracking-[0.16em] text-slate-400">Booking readiness</p>
@@ -123,11 +165,11 @@ export function LeadInformationPanel({
         <div className="rounded-[24px] border border-slate-200 bg-slate-950 p-4 text-white">
           <p className="text-xs uppercase tracking-[0.16em] text-slate-400">Reservation recommendation</p>
           <div className="mt-4 space-y-4">
-            <div>
+            <div className={`rounded-2xl px-3 py-2 transition ${activeHighlight === "room" ? "insight-react-dark" : ""}`}>
               <p className="text-[11px] uppercase tracking-[0.16em] text-slate-400">Recommended room</p>
               <p className="mt-1 text-lg font-semibold text-white">{recommendedRoom ?? "Review required"}</p>
             </div>
-            <div>
+            <div className={`rounded-2xl px-3 py-2 transition ${activeHighlight === "total" ? "insight-react-dark" : ""}`}>
               <p className="text-[11px] uppercase tracking-[0.16em] text-slate-400">Estimated total price</p>
               <p className="mt-1 text-lg font-semibold text-white">
                 {typeof estimatedTotal === "number" ? `${estimatedTotal} ${currency}` : "Pending"}

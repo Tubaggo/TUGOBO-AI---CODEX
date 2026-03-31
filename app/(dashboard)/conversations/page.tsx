@@ -1,6 +1,5 @@
-import { ConversationThreadView } from "../../../components/crm/conversation-thread";
 import { ConversationList } from "../../../components/crm/conversation-list";
-import { LeadInformationPanel } from "../../../components/crm/lead-information-panel";
+import { ConversationsDemoShell } from "../../../components/crm/conversations-demo-shell";
 import type { AiReservationProcessingResult } from "../../../lib/ai/types/ai-reservation.types";
 import type { ConversationListItem } from "../../../lib/domain/types";
 import { getMockConversationEngine } from "../../../lib/mocks/conversation-engine";
@@ -193,17 +192,19 @@ export default async function ConversationsPage({ searchParams }: ConversationsP
   }
 
   const existingReservation = thread.lead ? getReservationByLeadId(thread.lead.id) : null;
+  const activeScenario =
+    demoScenarios.find((scenario) => scenario.conversationId === selectedConversationId)?.label ?? null;
 
   return (
     <div className="space-y-6">
       <div>
         <p className="text-xs uppercase tracking-[0.18em] text-sky-600">Sales Demo Conversation Flow</p>
         <h1 className="mt-1 text-3xl font-semibold text-slate-950">
-          Show hotel owners how AI turns chats into reservations
+          Never miss a booking again - even at 2 AM
         </h1>
         <p className="mt-2 max-w-3xl text-sm text-slate-500">
-          A live-looking inbox for WhatsApp, Instagram DM, and website chat that makes the guest
-          message, AI reply, and reservation path instantly clear.
+          Show hotel owners how AI replies instantly across WhatsApp, Instagram DM, and website
+          chat, then guides each guest toward reservation.
         </p>
       </div>
 
@@ -215,22 +216,15 @@ export default async function ConversationsPage({ searchParams }: ConversationsP
             demoScenarios={demoScenarios}
           />
         </div>
-        <div className="min-h-[720px]">
-          <ConversationThreadView
-            thread={thread}
-            aiResult={aiResult}
-            assistantConfig={assistantConfig}
-          />
-        </div>
-        <div className="min-h-[720px]">
-          <LeadInformationPanel
-            thread={thread}
-            aiResult={aiResult}
-            tenantId={engine.tenantId}
-            actorUserId={context.actorUserId}
-            existingReservation={existingReservation}
-          />
-        </div>
+        <ConversationsDemoShell
+          thread={thread}
+          aiResult={aiResult}
+          assistantConfig={assistantConfig}
+          tenantId={engine.tenantId}
+          actorUserId={context.actorUserId}
+          existingReservation={existingReservation}
+          scenarioLabel={activeScenario}
+        />
       </div>
     </div>
   );

@@ -79,11 +79,18 @@ export function ConversationList({
                     href={`/conversations?conversation=${scenario.conversationId}`}
                     className={`block rounded-2xl border px-3 py-2 text-sm transition ${
                       selected
-                        ? "border-slate-900 bg-slate-950 text-white shadow-lg shadow-slate-950/10"
+                        ? "border-slate-900 bg-slate-950 text-white shadow-lg shadow-slate-950/10 ring-4 ring-slate-900/5"
                         : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50"
                     }`}
                   >
-                    {scenario.label}
+                    <span className="flex items-center justify-between gap-3">
+                      <span>{scenario.label}</span>
+                      <span
+                        className={`h-2.5 w-2.5 rounded-full ${
+                          selected ? "live-dot bg-emerald-300 shadow-[0_0_0_6px_rgba(110,231,183,0.14)]" : "bg-slate-300"
+                        }`}
+                      />
+                    </span>
                   </Link>
                 );
               })}
@@ -108,15 +115,15 @@ export function ConversationList({
               <div
                 className={`rounded-[22px] border px-3 py-3 transition ${
                   selected
-                    ? "border-slate-900 bg-slate-950 text-white shadow-[0_20px_40px_-28px_rgba(15,23,42,0.85)]"
-                    : "border-slate-200 bg-white text-slate-900"
+                    ? "border-slate-900 bg-slate-950 text-white shadow-[0_20px_40px_-28px_rgba(15,23,42,0.85)] ring-4 ring-slate-900/5"
+                    : "border-slate-200 bg-white text-slate-900 hover:border-slate-300"
                 }`}
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex min-w-0 items-start gap-3">
                     <span
                       className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-[11px] font-semibold tracking-[0.18em] ${
-                        selected ? "bg-white/12 text-white" : meta.iconClass
+                        selected ? "bg-white/12 text-white shadow-[0_0_0_6px_rgba(255,255,255,0.04)]" : meta.iconClass
                       }`}
                     >
                       {meta.icon}
@@ -126,7 +133,7 @@ export function ConversationList({
                         <p className="truncate text-sm font-semibold">
                           {item.conversation.guestName ?? "Unknown guest"}
                         </p>
-                        <span className={`h-2 w-2 rounded-full ${selected ? "bg-white/60" : meta.dot}`} />
+                        <span className={`h-2 w-2 rounded-full ${selected ? "live-dot bg-white/80" : meta.dot}`} />
                       </div>
                       <p className={`mt-1 truncate text-xs ${selected ? "text-slate-300" : "text-slate-500"}`}>
                         {item.lastMessagePreview}
