@@ -3,8 +3,9 @@ import type { ReactNode } from "react";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Tugobo AI",
-  description: "Multi-tenant CRM and AI reservation platform for tourism businesses.",
+  title: "Tugobo AI | AI Reservation Assistant for Accommodation Businesses",
+  description:
+    "Tugobo AI helps hotels, boutique properties, villas, and bungalow operators reply instantly on WhatsApp, Instagram DM, and website chat to convert more guest messages into reservations.",
 };
 
 type RootLayoutProps = {
