@@ -10,8 +10,8 @@ body {
   margin: 0;
   min-height: 100vh;
   background:
-    radial-gradient(circle at top, rgba(103, 232, 249, 0.1), transparent 24%),
-    #f6f7fb;
+    radial-gradient(circle at top, rgba(103, 232, 249, 0.08), transparent 24%),
+    linear-gradient(180deg, #f4f7fb, #f1f5f9 68%, #eff4f8);
   color: #0f172a;
   font-family: "Aptos", "Segoe UI", "Helvetica Neue", sans-serif;
 }
@@ -85,13 +85,14 @@ body {
 
 .premium-card {
   box-shadow:
-    0 24px 50px -34px rgba(15, 23, 42, 0.22),
-    inset 0 1px 0 rgba(255, 255, 255, 0.72);
+    0 22px 46px -34px rgba(15, 23, 42, 0.16),
+    0 1px 0 rgba(255, 255, 255, 0.72),
+    inset 0 1px 0 rgba(255, 255, 255, 0.84);
 }
 
 .interactive-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 28px 60px -36px rgba(15, 23, 42, 0.34);
+  box-shadow: 0 26px 54px -38px rgba(15, 23, 42, 0.24);
 }
 
 .attention-badge {
