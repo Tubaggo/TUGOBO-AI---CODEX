@@ -377,7 +377,7 @@ export default function HomePage() {
   const sectionCopy = sectionContent[language];
 
   return (
-    <main className="min-h-screen overflow-x-clip bg-[#f6f7fb] text-slate-900">
+    <main className="min-h-screen overflow-x-clip bg-[var(--page-surface)] text-slate-900">
       <>
         <div className="sticky top-0 z-40 border-b border-white/50 bg-slate-950/80 backdrop-blur-xl">
           <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
@@ -441,48 +441,48 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="relative overflow-hidden bg-[linear-gradient(180deg,#f4f8fd,#edf3f9)]">
+        <section className="light-section-a relative overflow-hidden">
           <div className="mx-auto max-w-7xl px-6 py-24">
-            <div className="section-accent absolute left-6 top-14 h-28 w-28 rounded-full bg-rose-200/30 blur-3xl" />
-            <SectionHeading eyebrow={sectionCopy.problem.eyebrow} title={sectionCopy.problem.title} description={sectionCopy.problem.description} />
+            <div className="section-accent absolute left-6 top-14 h-28 w-28 rounded-full bg-rose-400/12 blur-3xl" />
+            <SectionHeading eyebrow={sectionCopy.problem.eyebrow} title={sectionCopy.problem.title} description={sectionCopy.problem.description} invert />
             <div className="mt-12 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
               {sectionCopy.problem.items.map((point) => (
-                <div key={point} className="interactive-card premium-card rounded-[30px] border border-slate-200/60 bg-[rgba(255,255,255,0.72)] p-7 backdrop-blur">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-50 text-lg font-semibold text-rose-600 shadow-sm">-</div>
-                  <p className="mt-5 text-base leading-7 text-slate-700">{point}</p>
+                <div key={point} className="interactive-card premium-card light-surface-card rounded-[30px] border p-7 backdrop-blur">
+                  <div className="dark-icon-rose flex h-12 w-12 items-center justify-center rounded-2xl text-lg font-semibold">-</div>
+                  <p className="dark-section-text mt-5 text-base leading-7">{point}</p>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        <section className="relative overflow-hidden border-y border-slate-200/60 bg-[linear-gradient(180deg,#f7fafd,#eef4fa)]">
-          <div className="section-accent absolute right-0 top-8 h-48 w-48 rounded-full bg-cyan-200/35 blur-3xl" />
+        <section className="light-section-b dark-section-divider relative overflow-hidden border-y">
+          <div className="section-accent absolute right-0 top-8 h-48 w-48 rounded-full bg-cyan-400/10 blur-3xl" />
           <div className="mx-auto grid max-w-7xl gap-12 px-6 py-24 lg:grid-cols-[0.88fr_1.12fr] lg:items-start">
-            <SectionHeading eyebrow={sectionCopy.solution.eyebrow} title={sectionCopy.solution.title} description={sectionCopy.solution.description} />
+            <SectionHeading eyebrow={sectionCopy.solution.eyebrow} title={sectionCopy.solution.title} description={sectionCopy.solution.description} invert />
             <div className="grid gap-4 sm:grid-cols-2">
               {sectionCopy.solution.items.map((item, index) => (
-                <div key={item} className="interactive-card premium-card rounded-[28px] border border-slate-200/70 bg-[rgba(255,255,255,0.76)] p-6">
-                  <p className="text-sm font-semibold text-sky-700">0{index + 1}</p>
-                  <p className="mt-3 text-base leading-7 text-slate-700">{item}</p>
+                <div key={item} className="interactive-card premium-card light-surface-card rounded-[28px] border p-6">
+                  <p className="text-sm font-semibold text-cyan-300">0{index + 1}</p>
+                  <p className="dark-section-text mt-3 text-base leading-7">{item}</p>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        <section className="relative overflow-hidden bg-[linear-gradient(180deg,#eff4fa,#f7fafd)]">
-          <div className="section-accent absolute left-1/3 top-0 h-40 w-40 rounded-full bg-sky-200/30 blur-3xl" />
+        <section className="light-section-c relative overflow-hidden">
+          <div className="section-accent absolute left-1/3 top-0 h-40 w-40 rounded-full bg-sky-400/10 blur-3xl" />
           <div className="mx-auto max-w-7xl px-6 py-24">
-            <SectionHeading eyebrow={sectionCopy.channels.eyebrow} title={sectionCopy.channels.title} description={sectionCopy.channels.description} />
+            <SectionHeading eyebrow={sectionCopy.channels.eyebrow} title={sectionCopy.channels.title} description={sectionCopy.channels.description} invert />
             <div className="mt-12 grid gap-5 md:grid-cols-3">
               {sectionCopy.channels.items.map(([title, description], index) => (
-                <div key={title} className="interactive-card premium-card rounded-[30px] border border-slate-200/70 bg-[rgba(255,255,255,0.76)] p-7">
+                <div key={title} className="interactive-card premium-card light-surface-card rounded-[30px] border p-7">
                   <div className="flex items-center justify-between gap-3">
-                    <div className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${index === 0 ? "bg-emerald-50 text-emerald-700" : index === 1 ? "bg-fuchsia-50 text-fuchsia-700" : "bg-sky-50 text-sky-700"}`}>{title}</div>
+                    <div className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${index === 0 ? "dark-chip-emerald" : index === 1 ? "dark-chip-fuchsia" : "dark-chip-sky"}`}>{title}</div>
                     <span className="h-2.5 w-2.5 rounded-full bg-sky-400 shadow-[0_0_0_6px_rgba(56,189,248,0.16)]" />
                   </div>
-                  <p className="mt-5 text-base leading-7 text-slate-600">{description}</p>
+                  <p className="dark-section-body mt-5 text-base leading-7">{description}</p>
                 </div>
               ))}
             </div>
@@ -503,52 +503,52 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="relative overflow-hidden bg-[linear-gradient(180deg,#f6f9fc,#edf3f8)]">
-          <div className="section-accent absolute right-8 top-8 h-40 w-40 rounded-full bg-cyan-200/25 blur-3xl" />
+        <section className="light-section-d relative overflow-hidden">
+          <div className="section-accent absolute right-8 top-8 h-40 w-40 rounded-full bg-cyan-400/10 blur-3xl" />
           <div className="mx-auto max-w-7xl px-6 py-24">
-            <SectionHeading eyebrow={sectionCopy.howItWorks.eyebrow} title={sectionCopy.howItWorks.title} description={sectionCopy.howItWorks.description} />
+            <SectionHeading eyebrow={sectionCopy.howItWorks.eyebrow} title={sectionCopy.howItWorks.title} description={sectionCopy.howItWorks.description} invert />
             <div className="mt-12 grid gap-5 lg:grid-cols-3">
               {sectionCopy.howItWorks.items.map(([step, title, description]) => (
-                <div key={step} className="interactive-card premium-card relative overflow-hidden rounded-[30px] border border-slate-200/70 bg-[rgba(255,255,255,0.78)] p-7">
-                  <div className="absolute right-0 top-0 h-24 w-24 rounded-full bg-sky-100/70 blur-2xl" />
-                  <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-950 text-lg font-semibold text-white">{step}</div>
-                  <h3 className="mt-5 text-[1.35rem] font-semibold tracking-tight text-slate-950">{title}</h3>
-                  <p className="mt-3 text-base leading-7 text-slate-600">{description}</p>
+                <div key={step} className="interactive-card premium-card light-surface-card relative overflow-hidden rounded-[30px] border p-7">
+                  <div className="absolute right-0 top-0 h-24 w-24 rounded-full bg-sky-400/10 blur-2xl" />
+                  <div className="dark-step-badge relative flex h-12 w-12 items-center justify-center rounded-2xl text-lg font-semibold">{step}</div>
+                  <h3 className="dark-section-text mt-5 text-[1.35rem] font-semibold tracking-tight">{title}</h3>
+                  <p className="dark-section-body mt-3 text-base leading-7">{description}</p>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        <section className="border-y border-slate-200/60 bg-[linear-gradient(180deg,#f3f7fb,#eaf1f8)]">
+        <section className="light-section-e dark-section-divider border-y">
           <div className="mx-auto grid max-w-7xl gap-12 px-6 py-24 lg:grid-cols-[1fr_0.9fr]">
             <div>
-              <SectionHeading eyebrow={sectionCopy.positioning.eyebrow} title={sectionCopy.positioning.title} description={sectionCopy.positioning.description} />
+              <SectionHeading eyebrow={sectionCopy.positioning.eyebrow} title={sectionCopy.positioning.title} description={sectionCopy.positioning.description} invert />
             </div>
             <div className="grid gap-4">
               {sectionCopy.positioning.testimonials.map((item, index) => (
-                <div key={sectionCopy.positioning.authors[index]} className="interactive-card premium-card rounded-[30px] border border-slate-200/70 bg-[rgba(255,255,255,0.78)] p-7">
-                  <p className="text-xl leading-8 text-slate-700">&ldquo;{item}&rdquo;</p>
-                  <p className="mt-4 text-sm font-medium text-slate-500">{sectionCopy.positioning.authors[index]}</p>
+                <div key={sectionCopy.positioning.authors[index]} className="interactive-card premium-card light-surface-card rounded-[30px] border p-7">
+                  <p className="dark-section-text text-xl leading-8">&ldquo;{item}&rdquo;</p>
+                  <p className="dark-section-body mt-4 text-sm font-medium">{sectionCopy.positioning.authors[index]}</p>
                 </div>
               ))}
-              <div className="interactive-card premium-card rounded-[30px] border border-sky-100/80 bg-[linear-gradient(135deg,#edf5ff,#eef8fb)] p-7">
-                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-sky-700">{sectionCopy.positioning.fitLabel}</p>
-                <p className="mt-3 text-base leading-7 text-slate-700">{sectionCopy.positioning.fit}</p>
+              <div className="interactive-card premium-card light-surface-card-strong rounded-[30px] border p-7">
+                <p className="dark-fit-chip text-sm font-semibold uppercase tracking-[0.18em]">{sectionCopy.positioning.fitLabel}</p>
+                <p className="dark-section-text mt-3 text-base leading-7">{sectionCopy.positioning.fit}</p>
               </div>
             </div>
           </div>
         </section>
 
-        <section id="faq" className="relative overflow-hidden bg-[linear-gradient(180deg,#f7fafd,#eef4f9)]">
-          <div className="section-accent absolute left-10 top-8 h-36 w-36 rounded-full bg-sky-100/50 blur-3xl" />
+        <section id="faq" className="light-section-b relative overflow-hidden">
+          <div className="section-accent absolute left-10 top-8 h-36 w-36 rounded-full bg-sky-400/10 blur-3xl" />
           <div className="mx-auto max-w-7xl px-6 py-24">
-            <SectionHeading eyebrow={sectionCopy.faq.eyebrow} title={sectionCopy.faq.title} description={sectionCopy.faq.description} />
+            <SectionHeading eyebrow={sectionCopy.faq.eyebrow} title={sectionCopy.faq.title} description={sectionCopy.faq.description} invert />
             <div className="mt-12 grid gap-5 lg:grid-cols-3">
               {sectionCopy.faq.items.map((item) => (
-                <div key={item.question} className="interactive-card premium-card rounded-[30px] border border-slate-200/70 bg-[rgba(255,255,255,0.8)] p-7">
-                  <h3 className="text-xl font-semibold tracking-tight text-slate-950">{item.question}</h3>
-                  <p className="mt-3 text-base leading-7 text-slate-600">{item.answer}</p>
+                <div key={item.question} className="interactive-card premium-card light-surface-card-strong rounded-[30px] border p-7">
+                  <h3 className="dark-section-text text-xl font-semibold tracking-tight">{item.question}</h3>
+                  <p className="dark-section-body mt-3 text-base leading-7">{item.answer}</p>
                 </div>
               ))}
             </div>

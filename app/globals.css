@@ -2,6 +2,23 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --page-surface: #020617;
+  --dark-section-a-start: #08101d;
+  --dark-section-a-end: #0b1322;
+  --dark-section-b-start: #0d1626;
+  --dark-section-b-end: #111b2d;
+  --dark-section-c-start: #101a2b;
+  --dark-section-c-end: #0b1524;
+  --dark-section-d-start: #0f1828;
+  --dark-section-d-end: #142033;
+  --dark-section-e-start: #09111f;
+  --dark-section-e-end: #0d1728;
+  --dark-card-surface: linear-gradient(180deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.05));
+  --dark-card-surface-strong: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.065));
+  --dark-card-border: rgba(148, 163, 184, 0.16);
+}
+
 html {
   color-scheme: light;
 }
@@ -11,8 +28,8 @@ body {
   min-height: 100vh;
   background:
     radial-gradient(circle at top, rgba(103, 232, 249, 0.08), transparent 24%),
-    linear-gradient(180deg, #f4f7fb, #f1f5f9 68%, #eff4f8);
-  color: #0f172a;
+    linear-gradient(180deg, #020617, #08101d 58%, #020617);
+  color: #e2e8f0;
   font-family: "Aptos", "Segoe UI", "Helvetica Neue", sans-serif;
 }
 
@@ -85,14 +102,14 @@ body {
 
 .premium-card {
   box-shadow:
-    0 22px 46px -34px rgba(15, 23, 42, 0.16),
-    0 1px 0 rgba(255, 255, 255, 0.72),
-    inset 0 1px 0 rgba(255, 255, 255, 0.84);
+    0 24px 46px -34px rgba(2, 6, 23, 0.62),
+    0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 .interactive-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 26px 54px -38px rgba(15, 23, 42, 0.24);
+  box-shadow: 0 28px 56px -38px rgba(2, 6, 23, 0.72);
 }
 
 .attention-badge {
@@ -101,6 +118,78 @@ body {
 
 .section-accent {
   pointer-events: none;
+}
+
+.light-section-a {
+  background: linear-gradient(180deg, var(--dark-section-a-start), var(--dark-section-a-end));
+}
+
+.light-section-b {
+  background: linear-gradient(180deg, var(--dark-section-b-start), var(--dark-section-b-end));
+}
+
+.light-section-c {
+  background: linear-gradient(180deg, var(--dark-section-c-start), var(--dark-section-c-end));
+}
+
+.light-section-d {
+  background: linear-gradient(180deg, var(--dark-section-d-start), var(--dark-section-d-end));
+}
+
+.light-section-e {
+  background: linear-gradient(180deg, var(--dark-section-e-start), var(--dark-section-e-end));
+}
+
+.light-surface-card {
+  background: var(--dark-card-surface);
+  border-color: var(--dark-card-border);
+}
+
+.light-surface-card-strong {
+  background: var(--dark-card-surface-strong);
+  border-color: rgba(148, 163, 184, 0.2);
+}
+
+.dark-section-divider {
+  border-color: rgba(148, 163, 184, 0.12);
+}
+
+.dark-section-text {
+  color: #cbd5e1;
+}
+
+.dark-section-body {
+  color: #94a3b8;
+}
+
+.dark-step-badge {
+  background: rgba(15, 23, 42, 0.88);
+  color: #f8fafc;
+}
+
+.dark-icon-rose {
+  background: rgba(244, 63, 94, 0.12);
+  color: #fda4af;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.dark-chip-emerald {
+  background: rgba(16, 185, 129, 0.12);
+  color: #86efac;
+}
+
+.dark-chip-fuchsia {
+  background: rgba(217, 70, 239, 0.12);
+  color: #f0abfc;
+}
+
+.dark-chip-sky {
+  background: rgba(14, 165, 233, 0.12);
+  color: #7dd3fc;
+}
+
+.dark-fit-chip {
+  color: #7dd3fc;
 }
 
 .message-enter {
