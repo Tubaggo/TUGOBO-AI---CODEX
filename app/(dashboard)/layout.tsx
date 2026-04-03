@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { getCrmI18n } from "../../lib/crm-translations";
 
@@ -13,8 +14,17 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     <div className="min-h-screen bg-slate-100 text-slate-900">
       <div className="grid min-h-screen lg:grid-cols-[240px_1fr]">
         <aside className="border-r border-slate-200 bg-slate-950 px-6 py-8 text-slate-100">
-          <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Tugobo AI</p>
-          <h1 className="mt-3 text-xl font-semibold">{copy.layout.workspace}</h1>
+          <div className="inline-flex items-center rounded-2xl border border-white/10 bg-white/[0.03] px-3.5 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+            <Image
+              src="/logo/tugobo-logo.png"
+              alt="Tugobo AI"
+              width={168}
+              height={42}
+              className="h-auto w-[144px]"
+              priority
+            />
+          </div>
+          <h1 className="mt-5 text-xl font-semibold">{copy.layout.workspace}</h1>
           <nav className="mt-8 space-y-2 text-sm">
             <Link className="block rounded-xl px-3 py-2 text-slate-200 hover:bg-slate-900" href="/dashboard">
               {copy.layout.overview}

@@ -582,8 +582,16 @@ export default function HomePage() {
         <footer className="border-t border-white/10 bg-[linear-gradient(180deg,#020617,#0f172a)] text-white">
           <div className="mx-auto grid max-w-7xl gap-10 px-6 py-14 md:grid-cols-[1.2fr_0.7fr_0.9fr]">
             <div className="max-w-md">
-              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-cyan-300">Tugobo AI</p>
-              <p className="mt-4 text-sm leading-7 text-slate-300">{sectionCopy.footer.brandDescription}</p>
+              <div className="inline-flex items-center rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+                <Image
+                  src="/logo/tugobo-logo.png"
+                  alt="Tugobo AI"
+                  width={176}
+                  height={44}
+                  className="h-auto w-[148px] sm:w-[176px]"
+                />
+              </div>
+              <p className="mt-5 text-sm leading-7 text-slate-300">{sectionCopy.footer.brandDescription}</p>
             </div>
             <div>
               <p className="text-sm font-semibold text-white">{sectionCopy.footer.quickLinksTitle}</p>
