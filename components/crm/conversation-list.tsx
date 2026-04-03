@@ -58,6 +58,7 @@ export function ConversationList({
   demoScenarios = [],
 }: ConversationListProps) {
   const { copy, formatChannel, formatStatus, formatScenario } = getCrmI18n();
+  const scenarioMap = new Map(demoScenarios.map((scenario) => [scenario.conversationId, scenario.id]));
 
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_24px_80px_-48px_rgba(15,23,42,0.4)]">
@@ -169,6 +170,15 @@ export function ConversationList({
                   >
                     {formatChannel(item.channel.type)}
                   </span>
+                  {scenarioMap.has(item.conversation.id) ? (
+                    <span
+                      className={`rounded-full px-2.5 py-1 text-[11px] font-medium ${
+                        selected ? "bg-white/12 text-white" : "bg-amber-50 text-amber-700"
+                      }`}
+                    >
+                      {formatScenario(scenarioMap.get(item.conversation.id)!)}
+                    </span>
+                  ) : null}
                 </div>
                 <p className={`mt-3 text-xs ${selected ? "text-slate-300" : "text-slate-500"}`}>
                   {item.assignedUser?.fullName ?? copy.common.unassigned} |{" "}
@@ -176,6 +186,11 @@ export function ConversationList({
                     ? copy.conversations.humanTakeover
                     : formatStatus(item.conversation.status)}
                 </p>
+                {item.lead?.estimatedValue ? (
+                  <p className={`mt-2 text-xs font-medium ${selected ? "text-emerald-200" : "text-emerald-700"}`}>
+                    Tahmini rezervasyon değeri: {item.lead.estimatedValue} {item.lead.currency ?? "EUR"}
+                  </p>
+                ) : null}
               </div>
             </Link>
           );

@@ -1,5 +1,6 @@
 ﻿"use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { HomeHeroPreview } from "@/components/marketing/home-hero-preview";
@@ -381,9 +382,18 @@ export default function HomePage() {
       <>
         <div className="sticky top-0 z-40 border-b border-white/50 bg-slate-950/80 backdrop-blur-xl">
           <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-cyan-300">Tugobo AI</p>
-              <p className="mt-1 text-sm text-slate-300">{copy.brandTagline}</p>
+            <div className="flex items-center gap-4">
+              <Image
+                src="/logo/tugobo-logo.png"
+                alt="Tugobo AI"
+                width={160}
+                height={40}
+                className="h-auto w-[140px] sm:w-[160px]"
+                priority
+              />
+              <div>
+                <p className="text-sm text-slate-300">{copy.brandTagline}</p>
+              </div>
             </div>
             <div className="hidden items-center gap-3 sm:flex">
               <div className="flex items-center rounded-full border border-white/10 bg-white/5 p-1">

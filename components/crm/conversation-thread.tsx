@@ -5,13 +5,20 @@ import { getCrmI18n, type DemoScenarioId } from "../../lib/crm-translations";
 import type { AssistantConfig, ConversationThread } from "../../lib/domain/types";
 import type { AiReservationProcessingResult } from "../../lib/ai/types/ai-reservation.types";
 import { generateReservationReply } from "../../lib/ai/reply/generate-reservation-reply";
+import {
+  getDemoStageIndex,
+  type ConversationDemoScenario,
+  type DemoTimelineState,
+} from "../../lib/conversation-demo";
 
 type ConversationThreadProps = {
   thread: ConversationThread;
   aiResult: AiReservationProcessingResult;
   assistantConfig: AssistantConfig;
   scenarioLabel?: DemoScenarioId | null;
+  demoScenario?: ConversationDemoScenario | null;
   onAssistantMessageShown?: () => void;
+  onTimelineChange?: (timeline: DemoTimelineState) => void;
 };
 
 const channelThemes = {
@@ -59,7 +66,9 @@ export function ConversationThreadView({
   aiResult,
   assistantConfig,
   scenarioLabel,
+  demoScenario,
   onAssistantMessageShown,
+  onTimelineChange,
 }: ConversationThreadProps) {
   const {
     copy,
@@ -81,6 +90,14 @@ export function ConversationThreadView({
   const nextHiddenMessage = safeMessages[visibleCount];
   const theme = channelThemes[activeChannel];
   const visibleMessages = useMemo(() => safeMessages.slice(0, visibleCount), [safeMessages, visibleCount]);
+  const activeStage = demoScenario?.stages[getDemoStageIndex(demoScenario, visibleCount)] ?? null;
+  const progressPercent = safeMessages.length > 0 ? Math.min(100, Math.round((visibleCount / safeMessages.length) * 100)) : 0;
+  const liveSignals = demoScenario?.spotlightSignals ?? [];
+  const activityLabel = isTyping
+    ? nextHiddenMessage?.senderType === "assistant"
+      ? "Yapay zeka düşünüyor"
+      : "Yeni mesaj geliyor"
+    : activeStage?.cueLabel ?? "Canlı demo";
 
   useEffect(() => {
     setActiveChannel(safeConversation?.source ?? "webchat");
@@ -90,6 +107,16 @@ export function ConversationThreadView({
     setReplyMeta(null);
     announcedMessageIdsRef.current = new Set();
   }, [safeConversation?.id, safeConversation?.source]);
+
+  useEffect(() => {
+    onTimelineChange?.({
+      visibleCount,
+      totalCount: safeMessages.length,
+      isTyping,
+      nextMessageSender: nextHiddenMessage?.senderType ?? null,
+      latestVisibleMessage: visibleMessages[visibleMessages.length - 1] ?? null,
+    });
+  }, [isTyping, nextHiddenMessage?.senderType, onTimelineChange, safeMessages.length, visibleCount, visibleMessages]);
 
   useEffect(() => {
     if (visibleCount >= safeMessages.length) {
@@ -188,6 +215,19 @@ export function ConversationThreadView({
                   ? copy.conversations.scenarioBanner[scenarioLabel].detail
                   : copy.conversations.liveAssistantDetail}
               </p>
+              {demoScenario ? (
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <span className="rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-semibold text-slate-700">
+                    {activityLabel}
+                  </span>
+                  <span className="rounded-full bg-slate-950 px-2.5 py-1 text-[11px] font-medium text-white">
+                    %{progressPercent} akış tamamlandı
+                  </span>
+                  <span className="rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-medium text-amber-700">
+                    {demoScenario.valueHook}
+                  </span>
+                </div>
+              ) : null}
             </div>
           </div>
           <div className="rounded-[22px] border border-slate-200 bg-white/90 p-1 shadow-sm">
@@ -227,6 +267,42 @@ export function ConversationThreadView({
             </div>
           </div>
         </div>
+        {demoScenario ? (
+          <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_220px]">
+            <div className="rounded-[22px] border border-slate-200 bg-white/80 px-3 py-3 shadow-sm">
+              <div className="flex flex-wrap items-center gap-2">
+                {liveSignals.map((signal) => (
+                  <span
+                    key={signal.label}
+                    className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+                      signal.tone === "emerald"
+                        ? "bg-emerald-50 text-emerald-700"
+                        : signal.tone === "sky"
+                          ? "bg-sky-50 text-sky-700"
+                          : signal.tone === "amber"
+                            ? "bg-amber-50 text-amber-700"
+                            : signal.tone === "rose"
+                              ? "bg-rose-50 text-rose-700"
+                              : "bg-slate-100 text-slate-700"
+                    }`}
+                  >
+                    {signal.label}
+                  </span>
+                ))}
+              </div>
+              {activeStage ? (
+                <>
+                  <p className="mt-3 text-sm font-semibold text-slate-900">{activeStage.title}</p>
+                  <p className="mt-1 text-xs leading-5 text-slate-500">{activeStage.detail}</p>
+                </>
+              ) : null}
+            </div>
+            <div className="rounded-[22px] border border-slate-200 bg-slate-950 px-4 py-3 text-white shadow-sm">
+              <p className="text-[11px] uppercase tracking-[0.16em] text-slate-400">Demo Etkisi</p>
+              <p className="mt-2 text-sm font-semibold">{demoScenario.riskNote}</p>
+            </div>
+          </div>
+        ) : null}
       </div>
       <div className="flex-1 space-y-4 overflow-y-auto px-5 py-5">
         {visibleMessages.length > 0 ? (

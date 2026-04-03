@@ -206,6 +206,17 @@ export default async function ConversationsPage({ searchParams }: ConversationsP
         <p className="mt-2 max-w-3xl text-sm text-slate-500">
           {copy.conversations.heroDescription}
         </p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <span className="rounded-full border border-rose-100 bg-rose-50 px-3 py-1 text-xs font-medium text-rose-700">
+            Cevapsız mesaj = kaçan rezervasyon
+          </span>
+          <span className="rounded-full border border-sky-100 bg-sky-50 px-3 py-1 text-xs font-medium text-sky-700">
+            Anında AI yanıtı = daha yüksek dönüşüm
+          </span>
+          <span className="rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
+            Hızlı teklif = doğrudan rezervasyon fırsatı
+          </span>
+        </div>
       </div>
 
       <div className="grid gap-4 xl:grid-cols-[340px_minmax(0,1fr)_360px]">
