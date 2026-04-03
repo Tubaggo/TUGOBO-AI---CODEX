@@ -2,6 +2,7 @@ import { ReservationDetailPanel } from "../../../components/crm/reservation-deta
 import { ReservationsFilterBar } from "../../../components/crm/reservations-filter-bar";
 import { ReservationsTable } from "../../../components/crm/reservations-table";
 import { ReservableLeadsCard } from "../../../components/crm/reservable-leads-card";
+import { getCrmI18n } from "../../../lib/crm-translations";
 import {
   createDraftReservationFromLead,
   getReservationRecord,
@@ -17,6 +18,7 @@ type ReservationsPageProps = {
 };
 
 export default async function ReservationsPage({ searchParams }: ReservationsPageProps) {
+  const { copy } = getCrmI18n();
   const params = searchParams ? await searchParams : {};
   const records = listReservationRecords({
     status: params.status as "pending" | "confirmed" | "canceled" | undefined,
@@ -33,11 +35,10 @@ export default async function ReservationsPage({ searchParams }: ReservationsPag
   return (
     <div className="space-y-4">
       <div>
-        <p className="text-xs uppercase tracking-[0.18em] text-slate-400">Reservations CRM</p>
-        <h1 className="mt-1 text-2xl font-semibold text-slate-950">Reservations Management</h1>
+        <p className="text-xs uppercase tracking-[0.18em] text-slate-400">{copy.reservations.eyebrow}</p>
+        <h1 className="mt-1 text-2xl font-semibold text-slate-950">{copy.reservations.title}</h1>
         <p className="mt-2 max-w-3xl text-sm text-slate-500">
-          Manage booking records linked to conversation-driven leads, monitor reservation statuses,
-          and prepare staff follow-up.
+          {copy.reservations.description}
         </p>
       </div>
 
@@ -59,7 +60,7 @@ export default async function ReservationsPage({ searchParams }: ReservationsPag
           <ReservationDetailPanel record={selectedRecord} />
         ) : (
           <div className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500">
-            No reservation matches the current filters.
+            {copy.reservations.noMatch}
           </div>
         )}
       </div>

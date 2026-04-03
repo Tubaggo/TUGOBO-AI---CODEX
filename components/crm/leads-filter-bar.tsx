@@ -1,4 +1,5 @@
 import { getLeadFilters } from "../../lib/mocks/leads-module";
+import { getCrmI18n } from "../../lib/crm-translations";
 
 type LeadsFilterBarProps = {
   current: {
@@ -10,22 +11,23 @@ type LeadsFilterBarProps = {
 };
 
 export function LeadsFilterBar({ current }: LeadsFilterBarProps) {
+  const { copy, formatChannel, formatStatus } = getCrmI18n();
   const filters = getLeadFilters();
 
   return (
     <form className="rounded-2xl border border-slate-200 bg-white p-4">
       <div className="grid gap-3 md:grid-cols-4">
         <label className="text-sm text-slate-600">
-          <span className="mb-1 block text-xs uppercase tracking-[0.16em] text-slate-400">Status</span>
+          <span className="mb-1 block text-xs uppercase tracking-[0.16em] text-slate-400">{copy.common.status}</span>
           <select
             name="status"
             defaultValue={current.status ?? ""}
             className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900"
           >
-            <option value="">All statuses</option>
+            <option value="">{copy.common.allStatuses}</option>
             {filters.statuses.map((status) => (
               <option key={status} value={status}>
-                {status.replace("_", " ")}
+                {formatStatus(status)}
               </option>
             ))}
           </select>
@@ -33,14 +35,14 @@ export function LeadsFilterBar({ current }: LeadsFilterBarProps) {
 
         <label className="text-sm text-slate-600">
           <span className="mb-1 block text-xs uppercase tracking-[0.16em] text-slate-400">
-            Assigned User
+            {copy.leads.assignedUser}
           </span>
           <select
             name="assignedUser"
             defaultValue={current.assignedUser ?? ""}
             className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900"
           >
-            <option value="">All team members</option>
+            <option value="">{copy.common.allTeamMembers}</option>
             {filters.assignedUsers.map((user) => (
               <option key={user.id} value={user.id}>
                 {user.fullName}
@@ -50,16 +52,16 @@ export function LeadsFilterBar({ current }: LeadsFilterBarProps) {
         </label>
 
         <label className="text-sm text-slate-600">
-          <span className="mb-1 block text-xs uppercase tracking-[0.16em] text-slate-400">Channel</span>
+          <span className="mb-1 block text-xs uppercase tracking-[0.16em] text-slate-400">{copy.common.channel}</span>
           <select
             name="channel"
             defaultValue={current.channel ?? ""}
             className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900"
           >
-            <option value="">All channels</option>
+            <option value="">{copy.common.allChannels}</option>
             {filters.channels.map((channel) => (
               <option key={channel.id} value={channel.type}>
-                {channel.displayName}
+                {formatChannel(channel.type)}
               </option>
             ))}
           </select>
@@ -70,7 +72,7 @@ export function LeadsFilterBar({ current }: LeadsFilterBarProps) {
             type="submit"
             className="rounded-xl bg-slate-950 px-4 py-2 text-sm font-medium text-white"
           >
-            Apply Filters
+            {copy.common.applyFilters}
           </button>
           {current.lead ? <input type="hidden" name="lead" value={current.lead} /> : null}
         </div>

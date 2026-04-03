@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { getCrmI18n, type DemoScenarioId } from "../../lib/crm-translations";
 import type { ConversationThread } from "../../lib/domain/types";
 import type { AiReservationProcessingResult } from "../../lib/ai/types/ai-reservation.types";
 import type { ReservationRecord } from "../../lib/mocks/reservations-module";
@@ -12,15 +13,17 @@ type LeadInformationPanelProps = {
   tenantId: string;
   actorUserId: string;
   existingReservation: ReservationRecord | null;
-  scenarioLabel?: string | null;
+  scenarioLabel?: DemoScenarioId | null;
   analysisPulseKey?: number;
 };
 
 function Field({ label, value }: { label: string; value: string | number | null | undefined }) {
+  const { copy } = getCrmI18n();
+
   return (
     <div>
       <p className="text-xs uppercase tracking-[0.16em] text-slate-400">{label}</p>
-      <p className="mt-1 text-sm text-slate-800">{value ?? "Not captured"}</p>
+      <p className="mt-1 text-sm text-slate-800">{value ?? copy.common.notCaptured}</p>
     </div>
   );
 }
@@ -34,6 +37,15 @@ export function LeadInformationPanel({
   scenarioLabel,
   analysisPulseKey = 0,
 }: LeadInformationPanelProps) {
+  const {
+    copy,
+    formatAction,
+    formatMissingDetails,
+    formatMissingField,
+    formatQualification,
+    formatReadiness,
+    formatDate,
+  } = getCrmI18n();
   const safeConversation = thread.conversation;
   const lead = thread.lead;
   const [activeHighlight, setActiveHighlight] = useState<"readiness" | "room" | "total" | null>(null);
@@ -56,12 +68,9 @@ export function LeadInformationPanel({
       : aiResult.leadScore.readiness === "medium"
         ? "bg-amber-50 text-amber-700 ring-amber-200"
         : "bg-slate-100 text-slate-700 ring-slate-200";
-  const scenarioMessage =
-    scenarioLabel === "Family with Children"
-      ? "Family-friendly cues are being emphasized in the AI recommendation."
-      : scenarioLabel === "High Demand / Alternative Offer"
-        ? "Demand signals and fallback inventory are being surfaced to protect the booking."
-        : "The AI is keeping the path to reservation clear and low-friction.";
+  const scenarioMessage = scenarioLabel
+    ? copy.ai.scenarioMessages[scenarioLabel]
+    : copy.ai.scenarioMessages.standard_booking;
 
   useEffect(() => {
     if (analysisPulseKey === 0) {
@@ -89,8 +98,8 @@ export function LeadInformationPanel({
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_24px_80px_-48px_rgba(15,23,42,0.4)]">
       <div className="border-b border-slate-200 bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.14),_transparent_40%),linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] px-5 py-4">
-        <h2 className="text-sm font-semibold text-slate-900">AI Assistant Insights</h2>
-        <p className="mt-1 text-xs text-slate-500">The key booking signals your team needs to convert this chat.</p>
+        <h2 className="text-sm font-semibold text-slate-900">{copy.ai.insightsTitle}</h2>
+        <p className="mt-1 text-xs text-slate-500">{copy.ai.insightsDescription}</p>
         <p className="mt-3 rounded-2xl border border-sky-100 bg-sky-50/80 px-3 py-2 text-xs text-sky-700">
           {scenarioMessage}
         </p>
@@ -98,26 +107,28 @@ export function LeadInformationPanel({
 
       <div className="space-y-5 overflow-y-auto px-5 py-5">
         <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-4">
-          <p className="text-xs uppercase tracking-[0.16em] text-slate-400">Guest summary</p>
+          <p className="text-xs uppercase tracking-[0.16em] text-slate-400">{copy.ai.guestSummary}</p>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             <Field
-              label="Dates"
+              label={copy.ai.dates}
               value={
                 lead?.checkIn && lead?.checkOut
-                  ? `${new Date(lead.checkIn).toLocaleDateString("en-GB")} - ${new Date(lead.checkOut).toLocaleDateString("en-GB")}`
+                  ? `${formatDate(lead.checkIn)} ${copy.common.to} ${formatDate(lead.checkOut)}`
                   : null
               }
             />
             <Field
-              label="Guests"
+              label={copy.ai.guests}
               value={
                 typeof lead?.guestCount === "number"
-                  ? `${lead.guestCount} guests${lead.childCount ? `, ${lead.childCount} children` : ""}`
+                  ? `${lead.guestCount} ${copy.common.guests.toLocaleLowerCase("tr-TR")}${
+                      lead.childCount ? `, ${lead.childCount} ${copy.leads.children.toLocaleLowerCase("tr-TR")}` : ""
+                    }`
                   : null
               }
             />
             <Field
-              label="Budget"
+              label={copy.ai.budget}
               value={
                 lead?.budget
                   ? `${lead.budget} ${lead.currency}`
@@ -126,7 +137,7 @@ export function LeadInformationPanel({
                     : null
               }
             />
-            <Field label="Guest" value={lead?.fullName ?? safeConversation?.guestName} />
+            <Field label={copy.ai.guest} value={lead?.fullName ?? safeConversation?.guestName} />
           </div>
         </div>
 
@@ -135,27 +146,27 @@ export function LeadInformationPanel({
         >
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs uppercase tracking-[0.16em] text-slate-400">Booking readiness</p>
+              <p className="text-xs uppercase tracking-[0.16em] text-slate-400">{copy.ai.bookingReadiness}</p>
               <p className="mt-2 text-3xl font-semibold text-slate-950">{aiResult.leadScore.score}/100</p>
             </div>
-            <span className={`rounded-full px-3 py-1 text-xs font-medium capitalize ring-1 ${readinessTone}`}>
-              {aiResult.leadScore.readiness}
+            <span className={`rounded-full px-3 py-1 text-xs font-medium ring-1 ${readinessTone}`}>
+              {formatReadiness(aiResult.leadScore.readiness)}
             </span>
           </div>
           <p className="mt-3 text-sm text-slate-600">
             {aiResult.missingInfo.missingFields.length > 0
-              ? `AI still needs ${aiResult.missingInfo.missingFields.length} more detail${aiResult.missingInfo.missingFields.length > 1 ? "s" : ""} before the booking is fully locked.`
-              : "AI has enough information to guide this conversation toward a reservation."}
+              ? formatMissingDetails(aiResult.missingInfo.missingFields.length)
+              : copy.ai.enoughInfo}
           </p>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            <Field label="Lead stage" value={aiResult.qualification.replace("_", " ")} />
-            <Field label="Next step" value={aiResult.nextAction.replace("_", " ")} />
+            <Field label={copy.ai.leadStage} value={formatQualification(aiResult.qualification)} />
+            <Field label={copy.ai.nextStep} value={formatAction(aiResult.nextAction)} />
           </div>
           {aiResult.missingInfo.missingFields.length > 0 ? (
             <div className="mt-4 flex flex-wrap gap-2">
               {aiResult.missingInfo.missingFields.map((field) => (
                 <span key={field} className="rounded-full bg-amber-50 px-3 py-1 text-xs text-amber-700">
-                  {field.replace("_", " ")}
+                  {formatMissingField(field)}
                 </span>
               ))}
             </div>
@@ -163,16 +174,16 @@ export function LeadInformationPanel({
         </div>
 
         <div className="rounded-[24px] border border-slate-200 bg-slate-950 p-4 text-white">
-          <p className="text-xs uppercase tracking-[0.16em] text-slate-400">Reservation recommendation</p>
+          <p className="text-xs uppercase tracking-[0.16em] text-slate-400">{copy.ai.reservationRecommendation}</p>
           <div className="mt-4 space-y-4">
             <div className={`rounded-2xl px-3 py-2 transition ${activeHighlight === "room" ? "insight-react-dark" : ""}`}>
-              <p className="text-[11px] uppercase tracking-[0.16em] text-slate-400">Recommended room</p>
-              <p className="mt-1 text-lg font-semibold text-white">{recommendedRoom ?? "Review required"}</p>
+              <p className="text-[11px] uppercase tracking-[0.16em] text-slate-400">{copy.ai.recommendedRoom}</p>
+              <p className="mt-1 text-lg font-semibold text-white">{recommendedRoom ?? copy.ai.reviewRequired}</p>
             </div>
             <div className={`rounded-2xl px-3 py-2 transition ${activeHighlight === "total" ? "insight-react-dark" : ""}`}>
-              <p className="text-[11px] uppercase tracking-[0.16em] text-slate-400">Estimated total price</p>
+              <p className="text-[11px] uppercase tracking-[0.16em] text-slate-400">{copy.ai.estimatedTotalPrice}</p>
               <p className="mt-1 text-lg font-semibold text-white">
-                {typeof estimatedTotal === "number" ? `${estimatedTotal} ${currency}` : "Pending"}
+                {typeof estimatedTotal === "number" ? `${estimatedTotal} ${currency}` : copy.ai.pending}
               </p>
             </div>
             {aiResult.availabilityPricing?.pricingNote ? (
@@ -183,9 +194,9 @@ export function LeadInformationPanel({
 
         <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-4">
           <div className="flex items-center justify-between gap-3">
-            <p className="text-xs uppercase tracking-[0.16em] text-slate-400">AI Suggested Reply</p>
+            <p className="text-xs uppercase tracking-[0.16em] text-slate-400">{copy.conversations.aiSuggestedReply}</p>
             <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-medium text-slate-600">
-              {Math.round(aiResult.replySuggestion.confidence * 100)}% confidence
+              {Math.round(aiResult.replySuggestion.confidence * 100)}% {copy.common.confidence}
             </span>
           </div>
           <p className="mt-3 text-sm leading-6 text-slate-700">{aiResult.replySuggestion.message}</p>
@@ -193,7 +204,7 @@ export function LeadInformationPanel({
 
         {aiResult.reservationDraftSuggestion ? (
           <div className="rounded-[24px] border border-slate-200 bg-white p-4">
-            <p className="text-xs uppercase tracking-[0.16em] text-slate-400">Create reservation</p>
+            <p className="text-xs uppercase tracking-[0.16em] text-slate-400">{copy.ai.createReservation}</p>
             <p className="mt-2 text-sm text-slate-600">{aiResult.reservationDraftSuggestion.notes}</p>
             <div className="mt-4">
               <CreateReservationAction

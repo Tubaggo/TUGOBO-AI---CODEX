@@ -1,4 +1,5 @@
 import type { ChannelType } from "../../lib/domain/types";
+import { getCrmI18n } from "../../lib/crm-translations";
 
 const channelStyles: Record<ChannelType, string> = {
   whatsapp: "bg-emerald-50 text-emerald-700 ring-emerald-200",
@@ -7,9 +8,11 @@ const channelStyles: Record<ChannelType, string> = {
 };
 
 export function ChannelBadge({ channel }: { channel: ChannelType }) {
+  const { formatChannel } = getCrmI18n();
+
   return (
     <span className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ring-1 ${channelStyles[channel]}`}>
-      {channel}
+      {formatChannel(channel)}
     </span>
   );
 }

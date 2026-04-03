@@ -1,11 +1,12 @@
 import Link from "next/link";
+import { getCrmI18n, type DemoScenarioId } from "../../lib/crm-translations";
 import type { ConversationListItem } from "../../lib/domain/types";
 
 type ConversationListProps = {
   items: ConversationListItem[];
   selectedConversationId: string;
   demoScenarios?: ReadonlyArray<{
-    label: string;
+    id: DemoScenarioId;
     conversationId: string;
   }>;
 };
@@ -29,22 +30,24 @@ const channelMeta = {
 } as const;
 
 function getInboxStatus(item: ConversationListItem) {
+  const { copy } = getCrmI18n();
+
   if (item.unreadCount > 0) {
     return {
-      label: "New message",
+      label: copy.conversations.newMessage,
       className: "bg-blue-100 text-blue-700",
     };
   }
 
   if (item.conversation.status === "waiting") {
     return {
-      label: "Waiting",
+      label: copy.conversations.waiting,
       className: "bg-amber-100 text-amber-700",
     };
   }
 
   return {
-    label: "AI replied",
+    label: copy.conversations.aiReplied,
     className: "bg-emerald-100 text-emerald-700",
   };
 }
@@ -54,21 +57,25 @@ export function ConversationList({
   selectedConversationId,
   demoScenarios = [],
 }: ConversationListProps) {
+  const { copy, formatChannel, formatStatus, formatScenario } = getCrmI18n();
+
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_24px_80px_-48px_rgba(15,23,42,0.4)]">
       <div className="border-b border-slate-200 bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.08),_transparent_45%),linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] px-4 py-4">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <h2 className="text-sm font-semibold text-slate-900">Inbox</h2>
-            <p className="mt-1 text-xs text-slate-500">Incoming guest chats that AI is actively handling.</p>
+            <h2 className="text-sm font-semibold text-slate-900">{copy.conversations.inboxTitle}</h2>
+            <p className="mt-1 text-xs text-slate-500">{copy.conversations.inboxDescription}</p>
           </div>
           <div className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-slate-500">
-            {items.length} active
+            {items.length} {copy.conversations.activeCountSuffix}
           </div>
         </div>
         {demoScenarios.length > 0 ? (
           <div className="mt-4 space-y-2">
-            <p className="text-[11px] uppercase tracking-[0.16em] text-slate-400">Demo Scenarios</p>
+            <p className="text-[11px] uppercase tracking-[0.16em] text-slate-400">
+              {copy.conversations.demoScenarios}
+            </p>
             <div className="grid gap-2">
               {demoScenarios.map((scenario) => {
                 const selected = scenario.conversationId === selectedConversationId;
@@ -84,7 +91,7 @@ export function ConversationList({
                     }`}
                   >
                     <span className="flex items-center justify-between gap-3">
-                      <span>{scenario.label}</span>
+                      <span>{formatScenario(scenario.id)}</span>
                       <span
                         className={`h-2.5 w-2.5 rounded-full ${
                           selected ? "live-dot bg-emerald-300 shadow-[0_0_0_6px_rgba(110,231,183,0.14)]" : "bg-slate-300"
@@ -131,7 +138,7 @@ export function ConversationList({
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
                         <p className="truncate text-sm font-semibold">
-                          {item.conversation.guestName ?? "Unknown guest"}
+                          {item.conversation.guestName ?? copy.common.unknownGuest}
                         </p>
                         <span className={`h-2 w-2 rounded-full ${selected ? "live-dot bg-white/80" : meta.dot}`} />
                       </div>
@@ -156,24 +163,24 @@ export function ConversationList({
                     {status.label}
                   </span>
                   <span
-                    className={`rounded-full px-2.5 py-1 text-[11px] font-medium capitalize ${
+                    className={`rounded-full px-2.5 py-1 text-[11px] font-medium ${
                       selected ? "bg-white/12 text-white" : "bg-slate-100 text-slate-600"
                     }`}
                   >
-                    {item.channel.type === "webchat" ? "Web Chat" : item.channel.type}
+                    {formatChannel(item.channel.type)}
                   </span>
                 </div>
                 <p className={`mt-3 text-xs ${selected ? "text-slate-300" : "text-slate-500"}`}>
-                  {item.assignedUser?.fullName ?? "Unassigned"} |{" "}
+                  {item.assignedUser?.fullName ?? copy.common.unassigned} |{" "}
                   {item.conversation.status === "human_handling"
-                    ? "Human takeover"
-                    : item.conversation.status.replace("_", " ")}
+                    ? copy.conversations.humanTakeover
+                    : formatStatus(item.conversation.status)}
                 </p>
               </div>
             </Link>
           );
         }) : (
-          <div className="px-4 py-6 text-sm text-slate-500">No conversations available.</div>
+          <div className="px-4 py-6 text-sm text-slate-500">{copy.conversations.noConversations}</div>
         )}
       </div>
     </div>

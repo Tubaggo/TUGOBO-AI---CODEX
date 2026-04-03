@@ -1,3 +1,5 @@
+import type { ReservationStatus } from "../domain/types";
+
 export type CreatedReservationSummary = {
   reservationId: string;
   guestName: string;
@@ -6,7 +8,7 @@ export type CreatedReservationSummary = {
   checkOut: string;
   estimatedPrice: number;
   currency: string;
-  status: string;
+  status: ReservationStatus;
 };
 
 export type CreateReservationActionState = {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import type { DemoScenarioId } from "../../lib/crm-translations";
 import type { AssistantConfig, ConversationThread } from "../../lib/domain/types";
 import type { AiReservationProcessingResult } from "../../lib/ai/types/ai-reservation.types";
 import type { ReservationRecord } from "../../lib/mocks/reservations-module";
@@ -14,7 +15,7 @@ type ConversationsDemoShellProps = {
   tenantId: string;
   actorUserId: string;
   existingReservation: ReservationRecord | null;
-  scenarioLabel: string | null;
+  scenarioLabel: DemoScenarioId | null;
 };
 
 export function ConversationsDemoShell({

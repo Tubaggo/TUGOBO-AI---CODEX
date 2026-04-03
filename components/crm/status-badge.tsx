@@ -1,4 +1,5 @@
 import type { ConversationStatus, LeadStatus, ReservationStatus } from "../../lib/domain/types";
+import { getCrmI18n } from "../../lib/crm-translations";
 
 const styles: Record<ConversationStatus | LeadStatus | ReservationStatus, string> = {
   open: "bg-blue-50 text-blue-700 ring-blue-200",
@@ -19,9 +20,11 @@ const styles: Record<ConversationStatus | LeadStatus | ReservationStatus, string
 };
 
 export function StatusBadge({ status }: { status: ConversationStatus | LeadStatus | ReservationStatus }) {
+  const { formatStatus } = getCrmI18n();
+
   return (
     <span className={`inline-flex rounded-full px-2 py-1 text-xs font-medium capitalize ring-1 ${styles[status]}`}>
-      {status === "canceled" ? "cancelled" : status.replace("_", " ")}
+      {formatStatus(status)}
     </span>
   );
 }

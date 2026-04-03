@@ -2,6 +2,12 @@ import type { Channel, Conversation, Lead, Reservation, User } from "../domain";
 import { channels, conversations, leads, reservations, users, tenantId } from "./conversation-inbox";
 
 const leadStatuses = ["new", "qualified", "offer_sent", "won", "lost"] as const;
+export type OverviewStatKey =
+  | "openConversations"
+  | "leadsCaptured"
+  | "bookingsWon"
+  | "pipelineValue"
+  | "humanHandoffs";
 
 export type LeadFilterInput = {
   status?: Lead["status"];
@@ -66,31 +72,26 @@ export function getOverviewAnalytics() {
   return {
     stats: [
       {
-        label: "Open Conversations",
+        key: "openConversations",
         value: String(openConversations),
-        note: "Active guest threads requiring follow-up",
       },
       {
-        label: "Leads Captured",
+        key: "leadsCaptured",
         value: String(leadRecords.length),
-        note: "Qualified reservation opportunities",
       },
       {
-        label: "Bookings Won",
+        key: "bookingsWon",
         value: String(wonLeads),
-        note: "Converted leads with confirmed reservations",
       },
       {
-        label: "Pipeline Value",
+        key: "pipelineValue",
         value: `EUR ${totalEstimatedValue.toLocaleString("en-GB")}`,
-        note: "Estimated reservation value across tracked leads",
       },
       {
-        label: "Human Handoffs",
+        key: "humanHandoffs",
         value: String(handoffs),
-        note: "Conversations escalated from the assistant",
       },
-    ],
+    ] as Array<{ key: OverviewStatKey; value: string }>,
     channelDistribution: channels.map((channel) => ({
       channel: channel.type,
       count: leadRecords.filter((item) => item.lead.sourceChannel === channel.type).length,

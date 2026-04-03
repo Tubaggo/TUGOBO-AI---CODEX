@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getCrmI18n } from "../../lib/crm-translations";
 import type { ReservationRecord } from "../../lib/mocks/reservations-module";
 import { StatusBadge } from "./status-badge";
 
@@ -22,21 +23,23 @@ export function ReservationsTable({
   selectedReservationId,
   currentStatus,
 }: ReservationsTableProps) {
+  const { copy, formatDate, formatDateTime } = getCrmI18n();
+
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-slate-200 text-sm">
           <thead className="bg-slate-50 text-left text-xs uppercase tracking-[0.16em] text-slate-500">
             <tr>
-              <th className="px-4 py-3 font-medium">Reservation</th>
-              <th className="px-4 py-3 font-medium">Guest</th>
-              <th className="px-4 py-3 font-medium">Stay</th>
-              <th className="px-4 py-3 font-medium">Room Type</th>
-              <th className="px-4 py-3 font-medium">Guests</th>
-              <th className="px-4 py-3 font-medium">Price</th>
-              <th className="px-4 py-3 font-medium">Status</th>
-              <th className="px-4 py-3 font-medium">Assigned</th>
-              <th className="px-4 py-3 font-medium">Last Activity</th>
+              <th className="px-4 py-3 font-medium">{copy.reservations.table.reservation}</th>
+              <th className="px-4 py-3 font-medium">{copy.reservations.table.guest}</th>
+              <th className="px-4 py-3 font-medium">{copy.reservations.table.stay}</th>
+              <th className="px-4 py-3 font-medium">{copy.reservations.table.roomType}</th>
+              <th className="px-4 py-3 font-medium">{copy.reservations.table.guests}</th>
+              <th className="px-4 py-3 font-medium">{copy.reservations.table.price}</th>
+              <th className="px-4 py-3 font-medium">{copy.reservations.table.status}</th>
+              <th className="px-4 py-3 font-medium">{copy.reservations.table.assigned}</th>
+              <th className="px-4 py-3 font-medium">{copy.reservations.table.lastActivity}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -53,20 +56,20 @@ export function ReservationsTable({
                       {record.reservation.reservationCode}
                     </Link>
                     <p className="mt-1 text-xs text-slate-500">
-                      {record.createdFromLead ? "Created from lead" : "Direct reservation"}
+                      {record.createdFromLead ? copy.reservations.createdFromLead : copy.reservations.directReservation}
                     </p>
                   </td>
                   <td className="px-4 py-4 text-slate-700">{record.reservation.guestName}</td>
                   <td className="px-4 py-4 text-slate-700">
-                    <div>{new Date(record.reservation.checkIn).toLocaleDateString("en-GB")}</div>
-                    <div className="mt-1 text-xs text-slate-500">
-                      {new Date(record.reservation.checkOut).toLocaleDateString("en-GB")}
-                    </div>
+                    <div>{formatDate(record.reservation.checkIn)}</div>
+                    <div className="mt-1 text-xs text-slate-500">{formatDate(record.reservation.checkOut)}</div>
                   </td>
-                  <td className="px-4 py-4 text-slate-700">{record.lead?.roomTypePreference ?? "Unassigned"}</td>
+                  <td className="px-4 py-4 text-slate-700">{record.lead?.roomTypePreference ?? copy.common.unassigned}</td>
                   <td className="px-4 py-4 text-slate-700">
-                    {record.reservation.adultCount} adult{record.reservation.adultCount > 1 ? "s" : ""}
-                    {record.reservation.childCount > 0 ? ` + ${record.reservation.childCount} child` : ""}
+                    {record.reservation.adultCount} {copy.common.guests.toLocaleLowerCase("tr-TR")}
+                    {record.reservation.childCount > 0
+                      ? ` + ${record.reservation.childCount} ${copy.leads.children.toLocaleLowerCase("tr-TR")}`
+                      : ""}
                   </td>
                   <td className="px-4 py-4 text-slate-700">
                     {record.reservation.totalPrice} {record.reservation.currency}
@@ -74,17 +77,8 @@ export function ReservationsTable({
                   <td className="px-4 py-4">
                     <StatusBadge status={record.reservation.status} />
                   </td>
-                  <td className="px-4 py-4 text-slate-700">{record.assignedUser?.fullName ?? "Unassigned"}</td>
-                  <td className="px-4 py-4 text-slate-700">
-                    {record.lastActivityAt
-                      ? new Date(record.lastActivityAt).toLocaleString("en-GB", {
-                          day: "2-digit",
-                          month: "short",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })
-                      : "-"}
-                  </td>
+                  <td className="px-4 py-4 text-slate-700">{record.assignedUser?.fullName ?? copy.common.unassigned}</td>
+                  <td className="px-4 py-4 text-slate-700">{formatDateTime(record.lastActivityAt) ?? "-"}</td>
                 </tr>
               );
             })}

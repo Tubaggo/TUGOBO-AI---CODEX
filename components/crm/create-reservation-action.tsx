@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { getCrmI18n } from "../../lib/crm-translations";
 import type { ReservationRecord } from "../../lib/mocks/reservations-module";
 import type { ReservationDraftSuggestion } from "../../lib/ai/types/ai-reservation.types";
 import { createReservationFromConversationDraftAction } from "../../lib/actions/conversation-reservation-actions";
@@ -28,6 +29,7 @@ export function CreateReservationAction({
   draft,
   existingReservation,
 }: CreateReservationActionProps) {
+  const { copy, formatDate, formatStatus } = getCrmI18n();
   const router = useRouter();
   const [state, formAction, isPending] = useActionState(
     createReservationFromConversationDraftAction,
@@ -71,13 +73,6 @@ export function CreateReservationAction({
         }
       : null;
 
-  function formatDate(value: string) {
-    return new Date(value).toLocaleDateString("en-GB", {
-      day: "2-digit",
-      month: "short",
-    });
-  }
-
   return (
     <form action={formAction} className="space-y-3">
       <input type="hidden" name="tenantId" value={tenantId} />
@@ -102,12 +97,12 @@ export function CreateReservationAction({
           {isPending ? (
             <>
               <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/35 border-t-white" />
-              Creating...
+              {copy.reservations.createReservation.creating}
             </>
           ) : existingReservation ? (
-            "Reservation Created"
+            copy.reservations.createReservation.created
           ) : (
-            "Create Reservation"
+            copy.reservations.createReservation.button
           )}
         </button>
         {existingReservation ? (
@@ -122,41 +117,41 @@ export function CreateReservationAction({
           {state.message}
         </p>
       ) : !leadId ? (
-        <p className="text-xs text-slate-500">Create or qualify the lead first to create a reservation.</p>
+        <p className="text-xs text-slate-500">{copy.reservations.createReservation.createFirstLead}</p>
       ) : !canCreate ? (
-        <p className="text-xs text-slate-500">Complete the stay dates, guest counts, and price to create the reservation.</p>
+        <p className="text-xs text-slate-500">{copy.reservations.createReservation.completeDraft}</p>
       ) : null}
 
       {summary ? (
         <div className="rounded-2xl border border-emerald-300 bg-emerald-50 p-4 text-sm text-slate-700 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.16em] text-emerald-700">Created Reservation</p>
+          <p className="text-xs uppercase tracking-[0.16em] text-emerald-700">{copy.reservations.createReservation.createdTitle}</p>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             <div>
-              <p className="text-[11px] uppercase tracking-[0.16em] text-slate-400">Reservation ID</p>
+              <p className="text-[11px] uppercase tracking-[0.16em] text-slate-400">{copy.reservations.createReservation.reservationId}</p>
               <p className="mt-1">{summary.reservationId}</p>
             </div>
             <div>
-              <p className="text-[11px] uppercase tracking-[0.16em] text-slate-400">Status</p>
-              <p className="mt-1 capitalize">{summary.status}</p>
+              <p className="text-[11px] uppercase tracking-[0.16em] text-slate-400">{copy.reservations.createReservation.status}</p>
+              <p className="mt-1">{formatStatus(summary.status)}</p>
             </div>
             <div>
-              <p className="text-[11px] uppercase tracking-[0.16em] text-slate-400">Guest</p>
+              <p className="text-[11px] uppercase tracking-[0.16em] text-slate-400">{copy.reservations.createReservation.guest}</p>
               <p className="mt-1">{summary.guestName}</p>
             </div>
             <div>
-              <p className="text-[11px] uppercase tracking-[0.16em] text-slate-400">Room</p>
-              <p className="mt-1">{summary.room ?? "Not assigned"}</p>
+              <p className="text-[11px] uppercase tracking-[0.16em] text-slate-400">{copy.reservations.createReservation.room}</p>
+              <p className="mt-1">{summary.room ?? copy.reservations.createReservation.roomUnassigned}</p>
             </div>
             <div>
-              <p className="text-[11px] uppercase tracking-[0.16em] text-slate-400">Check-in</p>
-              <p className="mt-1">{formatDate(summary.checkIn)}</p>
+              <p className="text-[11px] uppercase tracking-[0.16em] text-slate-400">{copy.reservations.createReservation.checkIn}</p>
+              <p className="mt-1">{formatDate(summary.checkIn, { day: "2-digit", month: "short" })}</p>
             </div>
             <div>
-              <p className="text-[11px] uppercase tracking-[0.16em] text-slate-400">Check-out</p>
-              <p className="mt-1">{formatDate(summary.checkOut)}</p>
+              <p className="text-[11px] uppercase tracking-[0.16em] text-slate-400">{copy.reservations.createReservation.checkOut}</p>
+              <p className="mt-1">{formatDate(summary.checkOut, { day: "2-digit", month: "short" })}</p>
             </div>
             <div className="sm:col-span-2">
-              <p className="text-[11px] uppercase tracking-[0.16em] text-slate-400">Estimated Price</p>
+              <p className="text-[11px] uppercase tracking-[0.16em] text-slate-400">{copy.reservations.createReservation.estimatedPrice}</p>
               <p className="mt-1">{`${summary.estimatedPrice} ${summary.currency}`}</p>
             </div>
           </div>

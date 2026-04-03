@@ -5,6 +5,7 @@ import type { ConversationListItem } from "../../../lib/domain/types";
 import { getMockConversationEngine } from "../../../lib/mocks/conversation-engine";
 import { getReservationByLeadId } from "../../../lib/mocks/reservations-module";
 import { assistantConfig, knowledgeBaseEntries } from "../../../lib/mocks/settings-module";
+import { getCrmI18n, type DemoScenarioId } from "../../../lib/crm-translations";
 
 type ConversationsPageProps = {
   searchParams?: Promise<{
@@ -13,9 +14,9 @@ type ConversationsPageProps = {
 };
 
 const demoScenarios = [
-  { label: "Standard Booking", conversationId: "conv_anna" },
-  { label: "Family with Children", conversationId: "conv_julia" },
-  { label: "High Demand / Alternative Offer", conversationId: "conv_omar" },
+  { id: "standard_booking" as DemoScenarioId, conversationId: "conv_anna" },
+  { id: "family_with_children" as DemoScenarioId, conversationId: "conv_julia" },
+  { id: "high_demand_alternative_offer" as DemoScenarioId, conversationId: "conv_omar" },
 ] as const;
 
 function createFallbackAiResult(): AiReservationProcessingResult {
@@ -51,7 +52,7 @@ function createFallbackAiResult(): AiReservationProcessingResult {
     availabilityPricing: null,
     replySuggestion: {
       type: "follow_up",
-      message: "AI insights will appear here when a conversation is available.",
+      message: "Bir konuşma seçildiğinde yapay zeka içgörüleri burada görünecek.",
       recommendedAction: "wait_for_guest_reply",
       referencedKnowledgeBase: [],
       confidence: 0,
@@ -107,6 +108,8 @@ async function loadSelectedThread(input: {
 }
 
 export default async function ConversationsPage({ searchParams }: ConversationsPageProps) {
+  const i18n = getCrmI18n();
+  const { copy } = i18n;
   const params = searchParams ? await searchParams : {};
   const engine = getMockConversationEngine();
   const context = { tenantId: engine.tenantId, actorUserId: "user_staff" };
@@ -124,15 +127,15 @@ export default async function ConversationsPage({ searchParams }: ConversationsP
     return (
       <div className="space-y-4">
         <div>
-          <p className="text-xs uppercase tracking-[0.18em] text-slate-400">CRM Conversation Engine</p>
-          <h1 className="mt-1 text-2xl font-semibold text-slate-950">Conversations Inbox</h1>
+          <p className="text-xs uppercase tracking-[0.18em] text-slate-400">{copy.conversations.emptyEyebrow}</p>
+          <h1 className="mt-1 text-2xl font-semibold text-slate-950">{copy.conversations.emptyTitle}</h1>
           <p className="mt-2 max-w-3xl text-sm text-slate-500">
-            Unified inbox for reservation inquiries across WhatsApp, Instagram DM, and web chat.
+            {copy.conversations.emptyDescription}
           </p>
         </div>
 
         <div className="rounded-2xl border border-slate-200 bg-white px-6 py-8 text-sm text-slate-500">
-          No conversations are available right now.
+          {copy.conversations.emptyState}
         </div>
       </div>
     );
@@ -154,10 +157,10 @@ export default async function ConversationsPage({ searchParams }: ConversationsP
     return (
       <div className="space-y-4">
         <div>
-          <p className="text-xs uppercase tracking-[0.18em] text-slate-400">CRM Conversation Engine</p>
-          <h1 className="mt-1 text-2xl font-semibold text-slate-950">Conversations Inbox</h1>
+          <p className="text-xs uppercase tracking-[0.18em] text-slate-400">{copy.conversations.emptyEyebrow}</p>
+          <h1 className="mt-1 text-2xl font-semibold text-slate-950">{copy.conversations.emptyTitle}</h1>
           <p className="mt-2 max-w-3xl text-sm text-slate-500">
-            Unified inbox for reservation inquiries across WhatsApp, Instagram DM, and web chat.
+            {copy.conversations.emptyDescription}
           </p>
         </div>
 
@@ -170,7 +173,7 @@ export default async function ConversationsPage({ searchParams }: ConversationsP
             />
           </div>
           <div className="rounded-2xl border border-slate-200 bg-white px-6 py-8 text-sm text-slate-500">
-            The selected conversation could not be loaded.
+            {copy.conversations.loadError}
           </div>
         </div>
       </div>
@@ -193,18 +196,15 @@ export default async function ConversationsPage({ searchParams }: ConversationsP
 
   const existingReservation = thread.lead ? getReservationByLeadId(thread.lead.id) : null;
   const activeScenario =
-    demoScenarios.find((scenario) => scenario.conversationId === selectedConversationId)?.label ?? null;
+    demoScenarios.find((scenario) => scenario.conversationId === selectedConversationId)?.id ?? null;
 
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-xs uppercase tracking-[0.18em] text-sky-600">Sales Demo Conversation Flow</p>
-        <h1 className="mt-1 text-3xl font-semibold text-slate-950">
-          Never miss a booking again - even at 2 AM
-        </h1>
+        <p className="text-xs uppercase tracking-[0.18em] text-sky-600">{copy.conversations.heroEyebrow}</p>
+        <h1 className="mt-1 text-3xl font-semibold text-slate-950">{copy.conversations.heroTitle}</h1>
         <p className="mt-2 max-w-3xl text-sm text-slate-500">
-          Show hotel owners how AI replies instantly across WhatsApp, Instagram DM, and website
-          chat, then guides each guest toward reservation.
+          {copy.conversations.heroDescription}
         </p>
       </div>
 

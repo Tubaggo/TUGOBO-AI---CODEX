@@ -80,7 +80,7 @@ export function createDraftReservationFromLead(leadId: string): ReservationRecor
       totalPrice: lead.estimatedValue ?? 0,
       currency: lead.currency ?? "EUR",
       status: "pending",
-      notes: "Draft created from linked lead in the CRM reservation module.",
+      notes: "CRM rezervasyon modülü içinde bağlı talepten taslak oluşturuldu.",
       createdAt: lead.updatedAt,
       updatedAt: lead.updatedAt,
     },
@@ -128,7 +128,7 @@ export async function createReservationFromDraftSuggestion(
   if (existing) {
     return {
       reservationId: existing.reservation.id,
-      message: "✅ Reservation successfully created",
+      message: "Rezervasyon başarıyla oluşturuldu",
       summary: {
         reservationId: existing.reservation.id,
         guestName: existing.reservation.guestName,
@@ -156,7 +156,7 @@ export async function createReservationFromDraftSuggestion(
     propertyId: "property_blue_cove_main",
     roomTypeId: null,
     reservationCode: `TUG-${String(reservations.length + 1).padStart(4, "0")}`,
-    guestName: lead.fullName ?? "Guest",
+    guestName: lead.fullName ?? "Misafir",
     guestEmail: lead.email,
     guestPhone: lead.phone,
     checkIn: input.checkIn,
@@ -179,7 +179,7 @@ export async function createReservationFromDraftSuggestion(
 
   return {
     reservationId: reservation.id,
-    message: "✅ Reservation successfully created",
+    message: "Rezervasyon başarıyla oluşturuldu",
     summary: {
       reservationId: reservation.id,
       guestName: reservation.guestName,

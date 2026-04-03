@@ -31,31 +31,41 @@ function buildStaySummary(input: {
   checkOut: string | null;
   guestCount: number | null;
   childCount: number | null;
+  language: string | null;
 }): string {
-  const parts = [
-    input.checkIn && input.checkOut ? `from ${input.checkIn} to ${input.checkOut}` : null,
-    input.guestCount ? `for ${input.guestCount} guest${input.guestCount > 1 ? "s" : ""}` : null,
-    typeof input.childCount === "number" && input.childCount > 0
-      ? `including ${input.childCount} child${input.childCount > 1 ? "ren" : ""}`
-      : null,
-  ].filter(Boolean);
+  const parts =
+    input.language === "tr"
+      ? [
+          input.checkIn && input.checkOut ? `${input.checkIn} - ${input.checkOut} tarihleri arasında` : null,
+          input.guestCount ? `${input.guestCount} misafir için` : null,
+          typeof input.childCount === "number" && input.childCount > 0
+            ? `${input.childCount} çocuk dahil`
+            : null,
+        ].filter(Boolean)
+      : [
+          input.checkIn && input.checkOut ? `from ${input.checkIn} to ${input.checkOut}` : null,
+          input.guestCount ? `for ${input.guestCount} guest${input.guestCount > 1 ? "s" : ""}` : null,
+          typeof input.childCount === "number" && input.childCount > 0
+            ? `including ${input.childCount} child${input.childCount > 1 ? "ren" : ""}`
+            : null,
+        ].filter(Boolean);
 
   return parts.join(" ");
 }
 
 function translateField(field: MissingInfoField, language: string | null): string {
   const translations: Record<MissingInfoField, { en: string; tr: string }> = {
-    guest_name: { en: "guest name", tr: "misafir adi" },
-    phone: { en: "phone number", tr: "telefon numarasi" },
+    guest_name: { en: "guest name", tr: "misafir adı" },
+    phone: { en: "phone number", tr: "telefon numarası" },
     email: { en: "email address", tr: "e-posta adresi" },
-    language: { en: "preferred language", tr: "tercih ettiginiz dil" },
-    check_in: { en: "check-in date", tr: "giris tarihi" },
-    check_out: { en: "check-out date", tr: "cikis tarihi" },
-    guest_count: { en: "number of guests", tr: "misafir sayisi" },
-    child_count: { en: "number of children", tr: "cocuk sayisi" },
+    language: { en: "preferred language", tr: "tercih ettiğiniz dil" },
+    check_in: { en: "check-in date", tr: "giriş tarihi" },
+    check_out: { en: "check-out date", tr: "çıkış tarihi" },
+    guest_count: { en: "number of guests", tr: "misafir sayısı" },
+    child_count: { en: "number of children", tr: "çocuk sayısı" },
     room_type_preference: { en: "preferred room type", tr: "oda tercihiniz" },
-    budget: { en: "approximate budget", tr: "yaklasik butceniz" },
-    special_requests: { en: "special requests", tr: "ozel talepleriniz" },
+    budget: { en: "approximate budget", tr: "yaklaşık bütçeniz" },
+    special_requests: { en: "special requests", tr: "özel talepleriniz" },
   };
 
   return language === "tr" ? translations[field].tr : translations[field].en;
@@ -76,7 +86,7 @@ function buildMissingInfoReply(input: GenerateReservationReplyInput): AssistantR
     type: "clarification",
     message:
       language === "tr"
-        ? `Merhaba${guestReference}, size en guzel secenegi hazirlayabilmem icin ${fields.join(", ")} bilgisini de paylasir misiniz?`
+        ? `Merhaba${guestReference}, size en güzel seçeneği hazırlayabilmem için ${fields.join(", ")} bilgisini de paylaşır mısınız?`
         : `Hello${guestReference}, I'd love to help with your stay. Could you share ${joined} so I can suggest the best room for you?`,
     recommendedAction: "ask_missing_information",
     referencedKnowledgeBase: [],
@@ -123,18 +133,21 @@ export function generateReservationReply(
     checkOut,
     guestCount,
     childCount,
+    language,
   });
   const familyFriendlyNote =
     typeof childCount === "number" && childCount > 0
-      ? " It is one of our most comfortable options for families and gives children more space."
+      ? language === "tr"
+        ? " Aileler için en konforlu seçeneklerimizden biridir ve çocuklara daha fazla alan sunar."
+        : " It is one of our most comfortable options for families and gives children more space."
       : "";
 
   if (language === "tr") {
     return {
       type: "offer",
       message: availabilityUpdate
-        ? `Merhaba${guestReference}, bu tarihler cok talep goruyor ve istediginiz oda hizla doluyor. ${fallbackRoom ?? suggestedRoom} su an uygun ve rahat bir alternatif olur.${estimatedTotal ? ` Toplam tutar yaklasik ${estimatedTotal} EUR civarinda.` : ""}${pricingNote ? ` ${pricingNote}` : ""} Isterseniz sizin icin hemen ayirayim.`
-        : `Harika bir secim${guestReference}, ${suggestedRoom}${staySummary ? ` ${staySummary}` : ""} icin cok guzel duruyor.${estimatedTotal ? ` Toplam tutar yaklasik ${estimatedTotal} EUR civarinda.` : ""}${familyFriendlyNote}${pricingNote ? ` ${pricingNote}` : ""} Isterseniz sizin icin hazirlayayim.`,
+        ? `Merhaba${guestReference}, bu tarihler çok talep görüyor ve istediğiniz oda hızla doluyor. ${fallbackRoom ?? suggestedRoom} şu an uygun ve rahat bir alternatif olur.${estimatedTotal ? ` Toplam tutar yaklaşık ${estimatedTotal} EUR civarında.` : ""}${pricingNote ? ` ${pricingNote}` : ""} İsterseniz sizin için hemen ayırayım.`
+        : `Harika bir seçim${guestReference}, ${suggestedRoom}${staySummary ? ` ${staySummary}` : ""} için çok güzel duruyor.${estimatedTotal ? ` Toplam tutar yaklaşık ${estimatedTotal} EUR civarında.` : ""}${familyFriendlyNote}${pricingNote ? ` ${pricingNote}` : ""} İsterseniz sizin için hazırlayayım.`,
       recommendedAction:
         aiResult.qualification === "offer_ready" ? "create_reservation_draft" : "prepare_offer",
       referencedKnowledgeBase: [],

@@ -1,6 +1,7 @@
 import { LeadDetailPanel } from "../../../components/crm/lead-detail-panel";
 import { LeadsFilterBar } from "../../../components/crm/leads-filter-bar";
 import { LeadsTable } from "../../../components/crm/leads-table";
+import { getCrmI18n } from "../../../lib/crm-translations";
 import { getLeadRecord, listLeadRecords } from "../../../lib/mocks/leads-module";
 
 type LeadsPageProps = {
@@ -13,6 +14,7 @@ type LeadsPageProps = {
 };
 
 export default async function LeadsPage({ searchParams }: LeadsPageProps) {
+  const { copy } = getCrmI18n();
   const params = searchParams ? await searchParams : {};
   const records = listLeadRecords({
     status: params.status as
@@ -33,10 +35,10 @@ export default async function LeadsPage({ searchParams }: LeadsPageProps) {
   return (
     <div className="space-y-4">
       <div>
-        <p className="text-xs uppercase tracking-[0.18em] text-slate-400">Leads CRM</p>
-        <h1 className="mt-1 text-2xl font-semibold text-slate-950">Lead Management</h1>
+        <p className="text-xs uppercase tracking-[0.18em] text-slate-400">{copy.leads.eyebrow}</p>
+        <h1 className="mt-1 text-2xl font-semibold text-slate-950">{copy.leads.title}</h1>
         <p className="mt-2 max-w-3xl text-sm text-slate-500">
-          Track reservation opportunities, qualify guests, and follow the link between conversation and booking.
+          {copy.leads.description}
         </p>
       </div>
 
@@ -63,7 +65,7 @@ export default async function LeadsPage({ searchParams }: LeadsPageProps) {
           <LeadDetailPanel record={selectedRecord} />
         ) : (
           <div className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500">
-            No lead matches the current filters.
+            {copy.leads.noMatch}
           </div>
         )}
       </div>
